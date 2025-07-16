@@ -1,0 +1,1024 @@
+import React, { useEffect, useRef, useState } from 'react';
+
+const OnchainSummerWaveText = () => {
+  const canvasRef = useRef(null);
+  const [wavelength, setWavelength] = useState(25);
+  const [speed, setSpeed] = useState(0.018);
+  const [threshold, setThreshold] = useState(0.12);
+  const [gradientMode, setGradientMode] = useState(true);
+  const [patternType, setPatternType] = useState('interference'); // 'interference', 'gentle', 'mandala', 'vectorfield'
+  const [color1, setColor1] = useState('#2C3E50');
+  const [color2, setColor2] = useState('#5DADE2');
+  const [color3, setColor3] = useState('#F8F9FA');
+  const [color4, setColor4] = useState('#E8F4FD');
+  const [sourceCount, setSourceCount] = useState(9);
+  const [lineDensity, setLineDensity] = useState(35);
+  const [mandalaComplexity, setMandalaComplexity] = useState(6);
+  const [mandalaSpeed, setMandalaSpeed] = useState(1.0);
+  const [tileSize, setTileSize] = useState(55); // For vectorfield pattern
+  const [tileShiftAmplitude, setTileShiftAmplitude] = useState(10); // For vectorfield pattern
+  const timeRef = useRef(0);
+  const linesRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    const updateCanvasSize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      return { width, height };
+    };
+
+    let { width, height } = updateCanvasSize();
+
+    const createSVGMask = () => {
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "2895");
+      svg.setAttribute("height", "1255");
+      svg.setAttribute("viewBox", "0 0 2895 1255");
+
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("d", "M307.436 699.987C419.891 699.911 482.581 754.49 497.095 835.609L366.968 835.697C359.723 813.211 341.24 800.371 307.503 800.394C276.979 800.415 260.922 811.671 260.932 826.129C260.943 842.194 273.798 847.005 314.768 852.6L351.721 857.395C433.659 867.782 500.352 901.474 500.409 986.619C500.467 1072.57 427.409 1128.84 311.74 1128.92C194.465 1129 122.132 1068.8 113.24 986.076L244.974 985.988C254.631 1013.29 279.54 1024.52 312.474 1024.5C343.8 1024.48 362.268 1014.83 362.257 997.958C362.243 977.073 335.732 972.271 300.386 967.475L264.236 962.68C180.69 951.491 123.634 914.579 123.582 836.664C123.53 759.551 194.177 700.063 307.436 699.987ZM2312.88 699.442C2443.01 699.354 2524.2 794.887 2524.28 918.588C2524.29 924.211 2524.29 928.228 2522.69 941.884L2227.9 942.083C2238.38 995.893 2275.34 1012.74 2311.48 1012.71C2348.43 1012.69 2369.31 999.018 2378.13 980.538L2520.31 980.442C2500.28 1061.58 2417.59 1125.9 2308.35 1125.97C2175.81 1126.06 2090.6 1034.55 2090.52 911.651C2090.44 792.769 2176.33 699.534 2312.88 699.442ZM1993.46 709.417C2020.49 709.4 2042.45 716.558 2057.66 731.012C2072.9 745.492 2080.94 766.882 2080.96 794.392L2081.17 1117.18L1932 1117.28L1931.82 855.538C1931.82 847.389 1930.24 842.126 1927.21 838.867C1924.24 835.664 1919.24 833.74 1910.81 833.746L1835.99 833.796L1836.18 1117.35L1687.01 1117.45L1686.82 833.896L1612 833.947C1603.56 833.953 1598.57 835.882 1595.6 839.09C1592.58 842.353 1591.01 847.618 1591.01 855.767L1591.19 1117.51L1435.84 1117.61L1435.66 855.872C1435.66 847.723 1434.08 842.46 1431.05 839.201C1428.08 835.997 1423.08 834.074 1414.64 834.08L1339.82 834.13L1340.01 1117.68L1190.84 1117.78L1190.65 834.23L1115.83 834.281C1107.39 834.287 1102.4 836.214 1099.43 839.423C1096.41 842.686 1094.84 847.952 1094.85 856.101L1095.03 1117.84L945.852 1117.94L945.635 795.156C945.617 767.646 953.622 746.245 968.843 731.745C984.038 717.269 1005.99 710.083 1033.01 710.064L1497.29 709.751C1515.75 709.739 1530.71 709.639 1542.77 709.721L1993.46 709.417ZM922.798 1032.93C922.834 1086.74 891.526 1114.88 838.512 1114.92L610.388 1115.07C557.373 1115.1 526.027 1087.01 525.991 1033.19L525.775 713.5L668.755 713.403L668.929 972.05C668.94 988.919 675.372 996.947 693.043 996.935L755.697 996.893C773.368 996.881 779.789 988.844 779.777 971.976L779.604 713.329L922.583 713.232L922.798 1032.93ZM2790.1 830.051L2703.99 830.11C2686.32 830.122 2679.9 838.159 2679.91 855.027L2680.08 1113.67L2537.1 1113.77L2536.89 794.076C2536.85 740.258 2568.16 712.123 2621.17 712.087L2790.02 711.973L2790.1 830.051ZM2310.54 806.277C2273.59 806.302 2240.67 826.406 2231.06 864.968L2387.69 864.863C2378.83 825.509 2348.29 806.251 2310.54 806.277ZM1097.53 836.943C1096.91 837.566 1096.34 838.239 1095.83 838.966V838.973C1096.24 838.392 1096.68 837.846 1097.16 837.331C1097.28 837.2 1097.4 837.07 1097.53 836.943ZM1097.89 836.585C1097.77 836.703 1097.65 836.822 1097.53 836.943C1097.65 836.822 1097.77 836.703 1097.89 836.585ZM986.431 723.061C986.301 723.128 986.173 723.198 986.044 723.265C986.393 723.082 986.749 722.91 987.103 722.732C986.88 722.844 986.652 722.947 986.431 723.061ZM993.291 719.954C993.413 719.905 993.534 719.855 993.656 719.807H993.648C993.528 719.854 993.411 719.906 993.291 719.954ZM997.473 718.424C997.346 718.467 997.22 718.513 997.094 718.556C997.423 718.444 997.754 718.336 998.086 718.227C997.882 718.294 997.676 718.356 997.473 718.424ZM1014.17 714.486C1013.86 714.532 1013.55 714.592 1013.25 714.64C1013.76 714.56 1014.28 714.479 1014.79 714.405L1014.17 714.486ZM1528.17 712.804C1519.19 712.813 1508.95 712.839 1497.3 712.847L1033.01 713.16V713.167L1497.3 712.854C1508.95 712.846 1519.19 712.817 1528.17 712.804ZM1542.32 712.817C1542.7 712.819 1543.08 712.82 1543.45 712.823L1993.47 712.52C1993.63 712.52 1993.79 712.521 1993.96 712.521L1993.47 712.513L1542.32 712.817ZM305.97 256.858C421.54 256.78 511.818 343.514 511.902 468.53C511.986 592.75 421.825 680.402 306.255 680.48C190.685 680.558 101.152 593.026 101.068 468.806C100.984 343.79 190.4 256.936 305.97 256.858ZM1140.6 257.585C1246.58 257.514 1322.22 330.498 1337.11 430.514L1206.68 430.602C1197.03 403.617 1174.78 385.373 1142.17 385.395C1101.41 385.423 1070.31 418.786 1070.34 468.799C1070.38 518.018 1100.78 552.134 1142.28 552.106C1174.15 552.085 1197.85 533.016 1207.47 506.018L1339.38 505.929C1326.11 604.377 1249.09 679.846 1140.89 679.918C1026.76 679.995 937.77 594.318 937.686 468.888C937.602 345.046 1026.47 257.662 1140.6 257.585ZM1939.53 257.851C1981.3 257.823 2015.35 272.911 2032.39 297.555L2049.41 297.543L2049.39 269.707L2187.09 269.615L2187.36 667.284L2051.2 667.375L2051.18 631.585L2034.16 631.597C2014.84 662.628 1979.27 679.354 1932.85 679.385C1839.25 679.448 1768.02 599.166 1767.94 472.708C1767.85 343.863 1852.11 257.91 1939.53 257.851ZM837.814 270.633C890.829 270.598 922.175 298.691 922.211 352.509L922.426 672.204L779.447 672.3L779.272 413.652C779.261 396.784 772.83 388.756 755.158 388.768L692.505 388.81C674.833 388.822 668.412 396.859 668.424 413.727L668.598 672.375L525.619 672.471L525.403 352.776C525.367 298.958 556.676 270.823 609.69 270.788L837.814 270.633ZM1497.35 270.196L1666.84 270.082C1719.85 270.046 1751.2 298.139 1751.24 351.957L1751.45 671.652L1608.47 671.748L1608.3 413.1C1608.29 396.232 1601.86 388.203 1584.18 388.215L1497.43 388.274L1497.62 671.823L1354.64 671.918L1354.27 117.673L1497.25 117.578L1497.35 270.196ZM2361.99 671.242L2219.01 671.338L2218.74 269.711L2361.71 269.615L2361.99 671.242ZM2702.96 269.389C2755.97 269.354 2787.32 297.446 2787.35 351.264L2787.57 670.959L2644.59 671.055L2644.42 412.408C2644.41 395.54 2637.97 387.511 2620.3 387.523L2557.65 387.565C2539.98 387.577 2533.56 395.614 2533.57 412.482L2533.74 671.129L2390.76 671.226L2390.55 351.531C2390.51 297.713 2421.82 269.578 2474.83 269.542L2702.96 269.389ZM306.057 385.059C265.048 385.087 234.499 417.754 234.533 468.716C234.567 518.882 265.16 552.305 306.169 552.278C347.178 552.25 378.471 518.785 378.438 468.62C378.403 417.658 347.065 385.032 306.057 385.059ZM1980.62 385.078C1936.52 385.108 1906.37 419.327 1906.41 468.638C1906.44 517.949 1936.63 552.129 1980.73 552.099C2025.6 552.069 2053.42 514.669 2053.39 468.54C2053.36 422.41 2025.49 385.047 1980.62 385.078ZM2361.69 232.666L2218.71 232.762L2218.63 117.093L2361.61 116.997L2361.69 232.666Z");
+      path.setAttribute("fill", "white");
+
+      svg.appendChild(path);
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const svgAspectRatio = 2895 / 1255;
+          const maxSize = Math.min(width, height) * 0.7;
+
+          let drawWidth, drawHeight, drawX, drawY;
+
+          if (svgAspectRatio > width / height) {
+            drawWidth = maxSize;
+            drawHeight = maxSize / svgAspectRatio;
+          } else {
+            drawHeight = maxSize;
+            drawWidth = maxSize * svgAspectRatio;
+          }
+
+          drawX = (width - drawWidth) / 2;
+          drawY = (height - drawHeight) / 2;
+
+          tempCtx.fillStyle = 'black';
+          tempCtx.fillRect(0, 0, width, height);
+          tempCtx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+          const imageData = tempCtx.getImageData(0, 0, width, height);
+          URL.revokeObjectURL(svgUrl);
+          resolve(imageData);
+        };
+        img.src = svgUrl;
+      });
+    };
+
+    const generateSources = (count) => {
+      const sources = [];
+      sources.push({ x: width / 2, y: height / 2 });
+
+      if (count > 1) {
+        sources.push({ x: width / 4, y: height / 4 });
+        sources.push({ x: 3 * width / 4, y: height / 4 });
+        sources.push({ x: width / 4, y: 3 * height / 4 });
+        sources.push({ x: 3 * width / 4, y: 3 * height / 4 });
+      }
+
+      if (count > 5) {
+        sources.push({ x: width / 2, y: height / 6 });
+        sources.push({ x: width / 2, y: 5 * height / 6 });
+        sources.push({ x: width / 6, y: height / 2 });
+        sources.push({ x: 5 * width / 6, y: height / 2 });
+      }
+
+      while (sources.length < count) {
+        sources.push({
+          x: Math.random() * width,
+          y: Math.random() * height
+        });
+      }
+
+      return sources.slice(0, count);
+    };
+
+    const renderInterferencePattern = (imageData, svgMask, sources) => {
+      const data = imageData.data;
+      const rgb1 = hexToRgb(color1);
+      const rgb2 = hexToRgb(color2);
+      const rgb3 = hexToRgb(color3);
+      const rgb4 = hexToRgb(color4);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const maskIndex = (y * width + x) * 4;
+          const isInsideLogo = svgMask.data[maskIndex] > 128;
+          const index = (y * width + x) * 4;
+
+          if (isInsideLogo) {
+            let amplitude = 0;
+
+            sources.forEach((source, i) => {
+              const dx = x - source.x;
+              const dy = y - source.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              const phase = i * Math.PI / 4;
+              amplitude += Math.sin((distance / wavelength - timeRef.current) * 2 * Math.PI + phase);
+            });
+
+            const normalized = amplitude / sources.length;
+
+            if (gradientMode) {
+              const t = (normalized + 1) / 2;
+              let finalColor;
+              if (t < 0.33) {
+                const localT = t / 0.33;
+                finalColor = blendColors(rgb1, rgb2, localT);
+              } else if (t < 0.66) {
+                const localT = (t - 0.33) / 0.33;
+                finalColor = blendColors(rgb2, rgb3, localT);
+              } else {
+                const localT = (t - 0.66) / 0.34;
+                finalColor = blendColors(rgb3, rgb4, localT);
+              }
+
+              const noise = (Math.random() - 0.5) * 8;
+              data[index] = Math.max(0, Math.min(255, finalColor.r + noise));
+              data[index + 1] = Math.max(0, Math.min(255, finalColor.g + noise));
+              data[index + 2] = Math.max(0, Math.min(255, finalColor.b + noise));
+              data[index + 3] = 255;
+            } else {
+              const isLine = Math.abs(normalized) < threshold;
+              if (isLine) {
+                data[index] = rgb1.r;
+                data[index + 1] = rgb1.g;
+                data[index + 2] = rgb1.b;
+                data[index + 3] = 255;
+              } else {
+                data[index] = rgb3.r;
+                data[index + 1] = rgb3.g;
+                data[index + 2] = rgb3.b;
+                data[index + 3] = 255;
+              }
+            }
+          } else {
+            data[index] = rgb4.r;
+            data[index + 1] = rgb4.g;
+            data[index + 2] = rgb4.b;
+            data[index + 3] = 255;
+          }
+        }
+      }
+    };
+
+    const renderGentlePattern = (imageData, svgMask) => {
+      const data = imageData.data;
+      const rgb1 = hexToRgb(color1);
+      const rgb2 = hexToRgb(color2);
+      const rgb3 = hexToRgb(color3);
+      const rgb4 = hexToRgb(color4);
+
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = rgb4.r;
+        data[i + 1] = rgb4.g;
+        data[i + 2] = rgb4.b;
+        data[i + 3] = 255;
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      tempCtx.fillStyle = `rgb(${rgb4.r}, ${rgb4.g}, ${rgb4.b})`;
+      tempCtx.fillRect(0, 0, width, height);
+
+      const time = timeRef.current;
+      const stepSize = Math.max(4, Math.ceil(width / 300));
+
+      const numHorizontalLines = Math.min(lineDensity, Math.ceil(height / 20));
+      for (let i = 0; i < numHorizontalLines; i++) {
+        const yPos = (i / numHorizontalLines) * height;
+        const amplitude = (35 + 20 * Math.sin(time * 0.2 + i * 0.1)) * (wavelength / 25);
+        const frequency = (0.008 + 0.004 * Math.sin(time * 0.1 + i * 0.05)) * (25 / wavelength);
+        const speedOffset = time * (0.5 + 0.3 * Math.sin(i * 0.1));
+        const thickness = 1.5 + 1.0 * Math.sin(time + i * 0.2);
+        const opacity = 0.4 + 0.3 * Math.abs(Math.sin(time * 0.3 + i * 0.15));
+
+        tempCtx.beginPath();
+        tempCtx.lineWidth = thickness;
+        tempCtx.strokeStyle = `rgba(${rgb1.r}, ${rgb1.g}, ${rgb1.b}, ${opacity})`;
+
+        let firstPoint = true;
+        for (let x = 0; x < width; x += stepSize) {
+          const y = yPos + amplitude * Math.sin(x * frequency + speedOffset);
+          if (firstPoint) {
+            tempCtx.moveTo(x, y);
+            firstPoint = false;
+          } else {
+            tempCtx.lineTo(x, y);
+          }
+        }
+        tempCtx.stroke();
+      }
+
+      const numVerticalLines = Math.min(lineDensity, Math.ceil(width / 25));
+      for (let i = 0; i < numVerticalLines; i++) {
+        const xPos = (i / numVerticalLines) * width;
+        const amplitude = (30 + 15 * Math.sin(time * 0.15 + i * 0.12)) * (wavelength / 25);
+        const frequency = (0.009 + 0.004 * Math.cos(time * 0.12 + i * 0.07)) * (25 / wavelength);
+        const speedOffset = time * (0.4 + 0.25 * Math.cos(i * 0.15));
+        const thickness = 1.2 + 0.8 * Math.sin(time + i * 0.3);
+        const opacity = 0.3 + 0.2 * Math.abs(Math.sin(time * 0.25 + i * 0.18));
+
+        tempCtx.beginPath();
+        tempCtx.lineWidth = thickness;
+        tempCtx.strokeStyle = `rgba(${rgb2.r}, ${rgb2.g}, ${rgb2.b}, ${opacity})`;
+
+        let firstPoint = true;
+        for (let y = 0; y < height; y += stepSize) {
+          const x = xPos + amplitude * Math.sin(y * frequency + speedOffset);
+          if (firstPoint) {
+            tempCtx.moveTo(x, y);
+            firstPoint = false;
+          } else {
+            tempCtx.lineTo(x, y);
+          }
+        }
+        tempCtx.stroke();
+      }
+
+      const numDiagonalLines = Math.min(Math.ceil(lineDensity / 2), Math.ceil(width / 80));
+      for (let i = 0; i < numDiagonalLines; i++) {
+        const offset = (i / numDiagonalLines) * width * 1.5 - width * 0.25;
+        const amplitude = (20 + 10 * Math.cos(time * 0.25 + i * 0.1)) * (wavelength / 25);
+        const frequency = (0.01 + 0.005 * Math.sin(time * 0.15 + i * 0.08)) * (25 / wavelength);
+        const phase = time * (0.3 + 0.2 * Math.sin(i * 0.1));
+        const thickness = 1.0 + 0.5 * Math.sin(time + i * 0.25);
+        const opacity = 0.2 + 0.15 * Math.abs(Math.sin(time * 0.2 + i * 0.1));
+
+        tempCtx.beginPath();
+        tempCtx.lineWidth = thickness;
+        tempCtx.strokeStyle = `rgba(${rgb3.r}, ${rgb3.g}, ${rgb3.b}, ${opacity})`;
+
+        const steps = Math.ceil(height / stepSize);
+        let firstPoint = true;
+        for (let j = 0; j <= steps; j++) {
+          const progress = j / steps;
+          const x = offset + progress * width;
+          const y = progress * height + amplitude * Math.sin(progress * 8 + phase);
+
+          if (x >= 0 && x <= width && y >= 0 && y <= height) {
+            if (firstPoint) {
+              tempCtx.moveTo(x, y);
+              firstPoint = false;
+            } else {
+              tempCtx.lineTo(x, y);
+            }
+          }
+        }
+        tempCtx.stroke();
+      }
+
+      const tempImageData = tempCtx.getImageData(0, 0, width, height);
+      const tempData = tempImageData.data;
+
+      const sampleSize = Math.max(1, Math.ceil(Math.sqrt(width * height) / 1000));
+      for (let y = 0; y < height; y += sampleSize) {
+        for (let x = 0; x < width; x += sampleSize) {
+          const maskIndex = (y * width + x) * 4;
+          const isInsideLogo = svgMask.data[maskIndex] > 128;
+          if (isInsideLogo) {
+            for (let dy = 0; dy < sampleSize && y + dy < height; dy++) {
+              for (let dx = 0; dx < sampleSize && x + dx < width; dx++) {
+                const fillX = x + dx;
+                const fillY = y + dy;
+                const fillIndex = (fillY * width + fillX) * 4;
+                const tempIndex = (fillY * width + fillX) * 4;
+                data[fillIndex] = tempData[tempIndex];
+                data[fillIndex + 1] = tempData[tempIndex + 1];
+                data[fillIndex + 2] = tempData[tempIndex + 2];
+                data[fillIndex + 3] = 255;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const renderMandalaPattern = (imageData, svgMask) => {
+      const data = imageData.data;
+      const rgb1 = hexToRgb(color1);
+      const rgb2 = hexToRgb(color2);
+      const rgb3 = hexToRgb(color3);
+      const rgb4 = hexToRgb(color4);
+
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = rgb4.r;
+        data[i + 1] = rgb4.g;
+        data[i + 2] = rgb4.b;
+        data[i + 3] = 255;
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      tempCtx.fillStyle = `rgb(${rgb4.r}, ${rgb4.g}, ${rgb4.b})`;
+      tempCtx.fillRect(0, 0, width, height);
+
+      const time = timeRef.current * mandalaSpeed;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const baseRadius = Math.min(width, height) / 8;
+
+      const centerIntensity = (Math.sin(time * 0.025) + 1) / 2;
+      const centerSize = 3 + centerIntensity * 3;
+      tempCtx.beginPath();
+      tempCtx.arc(centerX, centerY, centerSize, 0, Math.PI * 2);
+      tempCtx.fillStyle = `rgba(${rgb1.r}, ${rgb1.g}, ${rgb1.b}, ${0.8 + centerIntensity * 0.2})`;
+      tempCtx.fill();
+
+      for (let layer = 0; layer < mandalaComplexity; layer++) {
+        const radius = baseRadius * (1 + layer * 0.7);
+        const points = 6 + layer * 2;
+
+        for (let i = 0; i < points; i++) {
+          const angle = (i / points) * Math.PI * 2;
+          const breathingFactor = 0.3 * Math.sin(time * 0.025 + layer * 0.5 + i * 0.2);
+          const x = centerX + Math.cos(angle) * (radius + breathingFactor * radius);
+          const y = centerY + Math.sin(angle) * (radius + breathingFactor * radius);
+
+          const intensityPhase = (Math.sin(time * 0.015 + layer * 0.4 + i * 0.8) + 1) / 2;
+          const opacity = 0.3 + intensityPhase * 0.6;
+          const size = 2 + intensityPhase * (4 + layer);
+
+          tempCtx.beginPath();
+          if (layer % 3 === 0) {
+            tempCtx.arc(x, y, size, 0, Math.PI * 2);
+            tempCtx.fillStyle = `rgba(${rgb1.r}, ${rgb1.g}, ${rgb1.b}, ${opacity})`;
+            tempCtx.fill();
+          } else if (layer % 3 === 1) {
+            tempCtx.rect(x - size, y - size, size * 2, size * 2);
+            tempCtx.fillStyle = `rgba(${rgb2.r}, ${rgb2.g}, ${rgb2.b}, ${opacity})`;
+            tempCtx.fill();
+          } else {
+            tempCtx.moveTo(x, y - size);
+            tempCtx.lineTo(x + size, y);
+            tempCtx.lineTo(x, y + size);
+            tempCtx.lineTo(x - size, y);
+            tempCtx.closePath();
+            tempCtx.fillStyle = `rgba(${rgb3.r}, ${rgb3.g}, ${rgb3.b}, ${opacity})`;
+            tempCtx.fill();
+          }
+
+          if (layer > 0 && i % 2 === 0) {
+            const secondaryRadius = radius * 0.6;
+            const x2 = centerX + Math.cos(angle + 0.3) * secondaryRadius;
+            const y2 = centerY + Math.sin(angle + 0.3) * secondaryRadius;
+
+            const secondaryIntensity = (Math.sin(time * 0.02 + layer * 0.3 + i) + 1) / 2;
+            const secondaryOpacity = 0.2 + secondaryIntensity * 0.4;
+            const secondarySize = 1 + secondaryIntensity * 2;
+
+            tempCtx.beginPath();
+            tempCtx.arc(x2, y2, secondarySize, 0, Math.PI * 2);
+            tempCtx.fillStyle = `rgba(${rgb2.r}, ${rgb2.g}, ${rgb2.b}, ${secondaryOpacity})`;
+            tempCtx.fill();
+          }
+        }
+      }
+
+      const numConnections = Math.floor(mandalaComplexity * 8);
+      for (let i = 0; i < numConnections; i++) {
+        const angle = (i / numConnections) * Math.PI * 2;
+        const radius1 = baseRadius * 0.5;
+        const radius2 = baseRadius * (2 + mandalaComplexity * 0.5);
+
+        const x1 = centerX + Math.cos(angle) * radius1;
+        const y1 = centerY + Math.sin(angle) * radius1;
+        const x2 = centerX + Math.cos(angle) * radius2;
+        const y2 = centerY + Math.sin(angle) * radius2;
+
+        const lineIntensity = (Math.sin(time * 0.01 + i * 0.2) + 1) / 2;
+        const lineOpacity = 0.1 + lineIntensity * 0.2;
+
+        tempCtx.beginPath();
+        tempCtx.moveTo(x1, y1);
+        tempCtx.lineTo(x2, y2);
+        tempCtx.strokeStyle = `rgba(${rgb1.r}, ${rgb1.g}, ${rgb1.b}, ${lineOpacity})`;
+        tempCtx.lineWidth = 1 + lineIntensity;
+        tempCtx.stroke();
+      }
+
+      for (let ring = 1; ring <= 3; ring++) {
+        const ringRadius = baseRadius * (0.3 + ring * 0.4);
+        const ringPoints = ring * 8;
+
+        for (let i = 0; i < ringPoints; i++) {
+          const angle = (i / ringPoints) * Math.PI * 2;
+          const breathingOffset = Math.sin(time * 0.03 + ring * 0.8 + i * 0.1) * (ringRadius * 0.1);
+          const x = centerX + Math.cos(angle) * (ringRadius + breathingOffset);
+          const y = centerY + Math.sin(angle) * (ringRadius + breathingOffset);
+
+          const dotIntensity = (Math.sin(time * 0.025 + ring * 0.5 + i * 0.3) + 1) / 2;
+          const dotOpacity = 0.2 + dotIntensity * 0.5;
+          const dotSize = 1 + dotIntensity * 2;
+
+          tempCtx.beginPath();
+          tempCtx.arc(x, y, dotSize, 0, Math.PI * 2);
+          tempCtx.fillStyle = `rgba(${rgb3.r}, ${rgb3.g}, ${rgb3.b}, ${dotOpacity})`;
+          tempCtx.fill();
+        }
+      }
+
+      const tempImageData = tempCtx.getImageData(0, 0, width, height);
+      const tempData = tempImageData.data;
+
+      const sampleSize = Math.max(1, Math.ceil(Math.sqrt(width * height) / 1000));
+      for (let y = 0; y < height; y += sampleSize) {
+        for (let x = 0; x < width; x += sampleSize) {
+          const maskIndex = (y * width + x) * 4;
+          const isInsideLogo = svgMask.data[maskIndex] > 128;
+          if (isInsideLogo) {
+            for (let dy = 0; dy < sampleSize && y + dy < height; dy++) {
+              for (let dx = 0; dx < sampleSize && x + dx < width; dx++) {
+                const fillX = x + dx;
+                const fillY = y + dy;
+                const fillIndex = (fillY * width + fillX) * 4;
+                const tempIndex = (fillY * width + fillX) * 4;
+                data[fillIndex] = tempData[tempIndex];
+                data[fillIndex + 1] = tempData[tempIndex + 1];
+                data[fillIndex + 2] = tempData[tempIndex + 2];
+                data[fillIndex + 3] = 255;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const numLines = 400;
+    const linePoints = 150;
+    const lineAlpha = 0.4;
+    const lineWidth = 0.5;
+
+    class Line {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 50 + Math.random() * 150;
+        this.x = width / 2 + Math.cos(angle) * distance;
+        this.y = height / 2 + Math.sin(angle) * distance;
+        this.points = [];
+        this.age = 0;
+        this.lifespan = 400 + Math.random() * 600;
+        this.opacity = 0;
+        this.width = 0.2 + Math.random() * 0.8;
+        const tileX = Math.floor(this.x / tileSize);
+        const tileY = Math.floor(this.y / tileSize);
+        const colorT = (tileX + tileY) / 20;
+        const rgb1 = hexToRgb(color1);
+        const rgb2 = hexToRgb(color2);
+        this.baseColor = {
+          r: Math.round(rgb1.r + (rgb2.r - rgb1.r) * colorT),
+          g: Math.round(rgb1.g + (rgb2.g - rgb1.g) * colorT),
+          b: Math.round(rgb1.b + (rgb2.b - rgb1.b) * colorT),
+        };
+      }
+
+      update(t, vectorField) {
+        this.age += 1;
+        if (this.age >= this.lifespan) {
+          this.reset();
+          return;
+        }
+        const progress = this.age / this.lifespan;
+        if (progress < 0.1) {
+          this.opacity = progress / 0.1 * lineAlpha;
+        } else if (progress > 0.9) {
+          this.opacity = (1 - (progress - 0.9) / 0.1) * lineAlpha;
+        } else {
+          this.opacity = lineAlpha;
+        }
+        const vector = vectorField(this.x, this.y, t);
+        this.points.push({ x: this.x, y: this.y });
+        if (this.points.length > linePoints) {
+          this.points.shift();
+        }
+        this.x += vector.x * 0.5;
+        this.y += vector.y * 0.5;
+        const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height || magnitude < 0.01) {
+          this.reset();
+        }
+      }
+
+      draw(ctx) {
+        if (this.points.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(${this.baseColor.r}, ${this.baseColor.g}, ${this.baseColor.b}, ${this.opacity})`;
+        ctx.lineWidth = this.width * lineWidth;
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < this.points.length; i++) {
+          ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    const renderVectorFieldPattern = (imageData, svgMask) => {
+      const data = imageData.data;
+      const rgb4 = hexToRgb(color4);
+      const noiseScale = 0.005;
+      const noiseTimeScale = 0.000125;
+
+      // Clear with background
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = rgb4.r;
+        data[i + 1] = rgb4.g;
+        data[i + 2] = rgb4.b;
+        data[i + 3] = 255;
+      }
+
+      // Create temporary canvas
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.fillStyle = `rgb(${rgb4.r}, ${rgb4.g}, ${rgb4.b})`;
+      tempCtx.fillRect(0, 0, width, height);
+
+      const noise = (x, y, z) => {
+        return Math.sin(x * 7 + z * 3) * 0.5 + Math.sin(y * 8 + z * 4) * 0.5;
+      };
+
+      const getTileOffset = (x, y, t) => {
+        const tileX = Math.floor(x / tileSize);
+        const tileY = Math.floor(y / tileSize);
+        const offsetX = tileShiftAmplitude * Math.sin(t * 0.01 + tileX * 0.5 + tileY * 0.3);
+        const offsetY = tileShiftAmplitude * Math.cos(t * 0.01 + tileY * 0.5 + tileX * 0.3);
+        return { offsetX, offsetY };
+      };
+
+      const vectorField = (x, y, t) => {
+        const { offsetX, offsetY } = getTileOffset(x, y, t);
+        const adjustedX = x + offsetX;
+        const adjustedY = y + offsetY;
+        const nx = (adjustedX - width / 2) * 0.01;
+        const ny = (adjustedY - height / 2) * 0.01;
+        const n = noise(nx, ny, t * noiseTimeScale);
+        const cx = adjustedX - width / 2;
+        const cy = adjustedY - height / 2;
+        const r = Math.sqrt(cx * cx + cy * cy);
+        const mask = Math.max(0, 1 - r / 200);
+        const angle = n * Math.PI * 4 + Math.atan2(cy, cx);
+        return { x: Math.cos(angle) * mask, y: Math.sin(angle) * mask };
+      };
+
+      if (linesRef.current) {
+        linesRef.current.forEach(line => {
+          line.update(timeRef.current, vectorField);
+          line.draw(tempCtx);
+        });
+      }
+
+      const tempImageData = tempCtx.getImageData(0, 0, width, height);
+      const tempData = tempImageData.data;
+
+      const sampleSize = Math.max(1, Math.ceil(Math.sqrt(width * height) / 1000));
+      for (let y = 0; y < height; y += sampleSize) {
+        for (let x = 0; x < width; x += sampleSize) {
+          const maskIndex = (y * width + x) * 4;
+          const isInsideLogo = svgMask.data[maskIndex] > 128;
+          if (isInsideLogo) {
+            for (let dy = 0; dy < sampleSize && y + dy < height; dy++) {
+              for (let dx = 0; dx < sampleSize && x + dx < width; dx++) {
+                const fillX = x + dx;
+                const fillY = y + dy;
+                const fillIndex = (fillY * width + fillX) * 4;
+                const tempIndex = (fillY * width + fillX) * 4;
+                data[fillIndex] = tempData[tempIndex];
+                data[fillIndex + 1] = tempData[tempIndex + 1];
+                data[fillIndex + 2] = tempData[tempIndex + 2];
+                data[fillIndex + 3] = 255;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    let sources = generateSources(sourceCount);
+    let svgMaskPromise = createSVGMask();
+    let svgMask = null;
+    let animationFrameId = null;
+
+    if (patternType === 'vectorfield' && !linesRef.current) {
+      linesRef.current = Array.from({ length: numLines }, () => new Line());
+    }
+
+    const animate = async () => {
+      if (!svgMask) {
+        svgMask = await svgMaskPromise;
+      }
+
+      const imageData = ctx.createImageData(width, height);
+
+      if (patternType === 'interference') {
+        renderInterferencePattern(imageData, svgMask, sources);
+      } else if (patternType === 'gentle') {
+        renderGentlePattern(imageData, svgMask);
+      } else if (patternType === 'mandala') {
+        renderMandalaPattern(imageData, svgMask);
+      } else if (patternType === 'vectorfield') {
+        renderVectorFieldPattern(imageData, svgMask);
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      timeRef.current += speed;
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const handleResize = () => {
+      const newSize = updateCanvasSize();
+      width = newSize.width;
+      height = newSize.height;
+      svgMaskPromise = createSVGMask();
+      svgMask = null;
+      sources = generateSources(sourceCount);
+      if (linesRef.current) {
+        linesRef.current.forEach(line => line.reset());
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    animate();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener('resize', handleResize);
+      sources.length = 0;
+      linesRef.current = null;
+    };
+  }, [wavelength, speed, threshold, gradientMode, patternType, color1, color2, color3, color4, sourceCount, lineDensity, mandalaComplexity, mandalaSpeed, tileSize, tileShiftAmplitude]);
+
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  };
+
+  const blendColors = (color1, color2, t) => {
+    return {
+      r: Math.round(color1.r + (color2.r - color1.r) * t),
+      g: Math.round(color1.g + (color2.g - color1.g) * t),
+      b: Math.round(color1.b + (color2.b - color1.b) * t)
+    };
+  };
+
+  const setDawnPreset = () => {
+    setColor1('#1B2951');
+    setColor2('#4A90A4');
+    setColor3('#85C1E9');
+    setColor4('#F8F9FA');
+    setGradientMode(true);
+  };
+
+  const setSunrisePreset = () => {
+    setColor1('#2C3E50');
+    setColor2('#E67E22');
+    setColor3('#F39C12');
+    setColor4('#FEF9E7');
+    setGradientMode(true);
+  };
+
+  const setOceanPreset = () => {
+    setColor1('#1B4F72');
+    setColor2('#3498DB');
+    setColor3('#AED6F1');
+    setColor4('#EBF5FB');
+    setGradientMode(true);
+  };
+
+  const buttonStyle = {
+    padding: '8px 12px',
+    fontSize: '12px',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+    backgroundColor: '#f8f9fa',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    whiteSpace: 'nowrap'
+  };
+
+  return (
+    <div style={{
+      position: 'relative',
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      backgroundColor: `rgb(${hexToRgb(color4).r}, ${hexToRgb(color4).g}, ${hexToRgb(color4).b})`
+    }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%'
+        }}
+      />
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        padding: '20px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        minWidth: '320px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '14px'
+      }}>
+        <h3 style={{ margin: '0 0 15px 0', color: '#333' }}>Pattern Controls</h3>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: 'bold' }}>
+            Pattern Type
+          </label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setPatternType('interference')}
+              style={{
+                ...buttonStyle,
+                backgroundColor: patternType === 'interference' ? '#007ACC' : '#f8f9fa',
+                color: patternType === 'interference' ? 'white' : '#333'
+              }}
+            >
+              Interference (Paradox)
+            </button>
+            <button
+              onClick={() => setPatternType('gentle')}
+              style={{
+                ...buttonStyle,
+                backgroundColor: patternType === 'gentle' ? '#007ACC' : '#f8f9fa',
+                color: patternType === 'gentle' ? 'white' : '#333'
+              }}
+            >
+              Gentle (Natural)
+            </button>
+            <button
+              onClick={() => setPatternType('mandala')}
+              style={{
+                ...buttonStyle,
+                backgroundColor: patternType === 'mandala' ? '#007ACC' : '#f8f9fa',
+                color: patternType === 'mandala' ? 'white' : '#333'
+              }}
+            >
+              Mandala (Wisdom)
+            </button>
+            <button
+              onClick={() => setPatternType('vectorfield')}
+              style={{
+                ...buttonStyle,
+                backgroundColor: patternType === 'vectorfield' ? '#007ACC' : '#f8f9fa',
+                color: patternType === 'vectorfield' ? 'white' : '#333'
+              }}
+            >
+              Vector Field (Flow)
+            </button>
+          </div>
+        </div>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: 'bold' }}>
+            Theme Presets
+          </label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button onClick={setDawnPreset} style={buttonStyle}>Dawn</button>
+            <button onClick={setSunrisePreset} style={buttonStyle}>Sunrise</button>
+            <button onClick={setOceanPreset} style={buttonStyle}>Ocean</button>
+          </div>
+        </div>
+        {patternType === 'interference' && (
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', color: '#666', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={gradientMode}
+                onChange={(e) => setGradientMode(e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              Gradient Mode
+            </label>
+          </div>
+        )}
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+            {patternType === 'interference' ? 'Wavelength' : patternType === 'gentle' ? 'Flow Scale' : patternType === 'mandala' ? 'Base Size' : 'Flow Scale'}: {wavelength}
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="80"
+            value={wavelength}
+            onChange={(e) => setWavelength(Number(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+            Speed: {speed.toFixed(3)}
+          </label>
+          <input
+            type="range"
+            min="0.001"
+            max="0.1"
+            step="0.001"
+            value={speed}
+            onChange={(e) => setSpeed(Number(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        {patternType === 'interference' && !gradientMode && (
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+              Line Thickness: {threshold.toFixed(3)}
+            </label>
+            <input
+              type="range"
+              min="0.01"
+              max="0.5"
+              step="0.01"
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+              style={{ width: '100%' }}
+            />
+          </div>
+        )}
+        {patternType === 'interference' && (
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+              Wave Sources: {sourceCount}
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="15"
+              value={sourceCount}
+              onChange={(e) => setSourceCount(Number(e.target.value))}
+              style={{ width: '100%' }}
+            />
+          </div>
+        )}
+        {patternType === 'gentle' && (
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+              Line Density: {lineDensity}
+            </label>
+            <input
+              type="range"
+              min="10"
+              max="80"
+              value={lineDensity}
+              onChange={(e) => setLineDensity(Number(e.target.value))}
+              style={{ width: '100%' }}
+            />
+          </div>
+        )}
+        {patternType === 'mandala' && (
+          <>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                Mandala Complexity: {mandalaComplexity}
+              </label>
+              <input
+                type="range"
+                min="3"
+                max="12"
+                value={mandalaComplexity}
+                onChange={(e) => setMandalaComplexity(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                Breathing Speed: {mandalaSpeed.toFixed(1)}x
+              </label>
+              <input
+                type="range"
+                min="0.2"
+                max="3.0"
+                step="0.1"
+                value={mandalaSpeed}
+                onChange={(e) => setMandalaSpeed(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </>
+        )}
+        {patternType === 'vectorfield' && (
+          <>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                Tile Size: {tileSize}
+              </label>
+              <input
+                type="range"
+                min="20"
+                max="100"
+                value={tileSize}
+                onChange={(e) => setTileSize(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                Tile Shift Amplitude: {tileShiftAmplitude}
+              </label>
+              <input
+                type="range"
+                min="5"
+                max="20"
+                value={tileShiftAmplitude}
+                onChange={(e) => setTileShiftAmplitude(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </>
+        )}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666', fontSize: '12px' }}>
+              Primary
+            </label>
+            <input
+              type="color"
+              value={color1}
+              onChange={(e) => setColor1(e.target.value)}
+              style={{ width: '100%', height: '35px', border: 'none', borderRadius: '6px' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666', fontSize: '12px' }}>
+              Secondary
+            </label>
+            <input
+              type="color"
+              value={color2}
+              onChange={(e) => setColor2(e.target.value)}
+              style={{ width: '100%', height: '35px', border: 'none', borderRadius: '6px' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666', fontSize: '12px' }}>
+              Accent
+            </label>
+            <input
+              type="color"
+              value={color3}
+              onChange={(e) => setColor3(e.target.value)}
+              style={{ width: '100%', height: '35px', border: 'none', borderRadius: '6px' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#666', fontSize: '12px' }}>
+              Background
+            </label>
+            <input
+              type="color"
+              value={color4}
+              onChange={(e) => setColor4(e.target.value)}
+              style={{ width: '100%', height: '35px', border: 'none', borderRadius: '6px' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OnchainSummerWaveText;
