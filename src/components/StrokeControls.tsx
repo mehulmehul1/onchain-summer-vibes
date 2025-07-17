@@ -2,9 +2,9 @@ import React from 'react';
 
 interface StrokeControlsProps {
   strokeEnabled: boolean;
-  setStrokeEnabled: (value: boolean) => void;
+  setStrokeEnabled: (enabled: boolean) => void;
   strokeWidth: number;
-  setStrokeWidth: (value: number) => void;
+  setStrokeWidth: (width: number) => void;
   strokeColor: string;
   setStrokeColor: (color: string) => void;
 }
@@ -15,28 +15,34 @@ const StrokeControls: React.FC<StrokeControlsProps> = ({
   strokeWidth,
   setStrokeWidth,
   strokeColor,
-  setStrokeColor
+  setStrokeColor,
 }) => {
   return (
-    <div style={{ marginBottom: '30px' }}>
+    <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
       <h4 style={{ 
         margin: '0 0 15px 0', 
         color: '#333',
-        fontSize: '16px',
+        fontSize: '14px',
         fontWeight: '600'
       }}>
-        Text Stroke
+        Stroke Settings
       </h4>
       
       <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', color: '#666', cursor: 'pointer' }}>
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          color: '#666', 
+          cursor: 'pointer',
+          userSelect: 'none'
+        }}>
           <input
             type="checkbox"
             checked={strokeEnabled}
             onChange={(e) => setStrokeEnabled(e.target.checked)}
             style={{ marginRight: '8px' }}
           />
-          Show Stroke Outline
+          Show Outline Stroke
         </label>
       </div>
 
@@ -44,7 +50,7 @@ const StrokeControls: React.FC<StrokeControlsProps> = ({
         <>
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
-              Stroke Width: {strokeWidth}px
+              Stroke Width: {strokeWidth}
             </label>
             <input
               type="range"
@@ -60,21 +66,12 @@ const StrokeControls: React.FC<StrokeControlsProps> = ({
             <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
               Stroke Color
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input
-                type="color"
-                value={strokeColor}
-                onChange={(e) => setStrokeColor(e.target.value)}
-                style={{
-                  width: '40px',
-                  height: '30px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              />
-              <span style={{ fontSize: '12px', color: '#666' }}>{strokeColor}</span>
-            </div>
+            <input
+              type="color"
+              value={strokeColor}
+              onChange={(e) => setStrokeColor(e.target.value)}
+              style={{ width: '100%', height: '35px', border: 'none', borderRadius: '6px' }}
+            />
           </div>
         </>
       )}

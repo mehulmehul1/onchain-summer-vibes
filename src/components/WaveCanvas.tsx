@@ -2,7 +2,7 @@ import React from 'react';
 import { hexToRgb } from '../utils/colorUtils';
 
 interface WaveCanvasProps {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   backgroundColor: string;
 }
 

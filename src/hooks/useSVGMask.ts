@@ -1,22 +1,25 @@
 import { useRef, useCallback } from 'react';
-import { createSVGMask } from '../utils/canvasUtils';
+import { createSVGMask, createSVGBackgroundLayer } from '../utils/canvasUtils';
 
 export const useSVGMask = () => {
   const fillMaskRef = useRef<ImageData | null>(null);
   const fillMaskPromiseRef = useRef<Promise<ImageData> | null>(null);
   const strokeMaskRef = useRef<ImageData | null>(null);
   const strokeMaskPromiseRef = useRef<Promise<ImageData> | null>(null);
+  const backgroundLayerRef = useRef<ImageData | null>(null);
+  const backgroundLayerPromiseRef = useRef<Promise<ImageData> | null>(null);
 
-  const createMask = useCallback((width: number, height: number, strokeEnabled: boolean = false, strokeWidth: number = 0) => {
-    fillMaskPromiseRef.current = createSVGMask(width, height, 'fill');
+  const createMask = useCallback(async (width: number, height: number, strokeEnabled: boolean, strokeWidth: number) => {
+    fillMaskPromiseRef.current = createSVGMask(width, height);
     fillMaskRef.current = null;
     
-    if (strokeEnabled && strokeWidth > 0) {
-      console.log('Creating stroke mask with strokeEnabled:', strokeEnabled, 'strokeWidth:', strokeWidth);
-      strokeMaskPromiseRef.current = createSVGMask(width, height, 'stroke', strokeWidth);
+    backgroundLayerPromiseRef.current = createSVGBackgroundLayer(width, height);
+    backgroundLayerRef.current = null;
+    
+    if (strokeEnabled) {
+      strokeMaskPromiseRef.current = createSVGMask(width, height, 'stroke');
       strokeMaskRef.current = null;
     } else {
-      console.log('Not creating stroke mask. strokeEnabled:', strokeEnabled, 'strokeWidth:', strokeWidth);
       strokeMaskPromiseRef.current = null;
       strokeMaskRef.current = null;
     }
@@ -36,15 +39,26 @@ export const useSVGMask = () => {
   }, []);
 
   const getStrokeMask = useCallback(async (): Promise<ImageData | null> => {
+    if (!strokeMaskPromiseRef.current) {
+      return null;
+    }
     if (strokeMaskRef.current) {
       return strokeMaskRef.current;
     }
-    if (strokeMaskPromiseRef.current) {
-      strokeMaskRef.current = await strokeMaskPromiseRef.current;
-      return strokeMaskRef.current;
-    }
-    return null;
+    strokeMaskRef.current = await strokeMaskPromiseRef.current;
+    return strokeMaskRef.current;
   }, []);
 
-  return { createMask, getFillMask, getStrokeMask };
+  const getBackgroundLayer = useCallback(async (): Promise<ImageData> => {
+    if (backgroundLayerRef.current) {
+      return backgroundLayerRef.current;
+    }
+    if (backgroundLayerPromiseRef.current) {
+      backgroundLayerRef.current = await backgroundLayerPromiseRef.current;
+      return backgroundLayerRef.current;
+    }
+    throw new Error('Background layer not initialized');
+  }, []);
+
+  return { createMask, getFillMask, getStrokeMask, getBackgroundLayer };
 };

@@ -92,8 +92,7 @@ export const renderVectorFieldPattern: PatternRenderer = (
   height: number,
   timeRef: number,
   colors: any,
-  options: VectorFieldOptions,
-  strokeMask?: ImageData | null
+  options: VectorFieldOptions
 ) => {
   const { tileSize, tileShiftAmplitude, lines } = options;
   const data = imageData.data;

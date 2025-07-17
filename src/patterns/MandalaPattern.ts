@@ -13,8 +13,7 @@ export const renderMandalaPattern: PatternRenderer = (
   height: number,
   timeRef: number,
   colors: any,
-  options: MandalaOptions,
-  strokeMask?: ImageData | null
+  options: MandalaOptions
 ) => {
   const { mandalaComplexity, mandalaSpeed } = options;
   const data = imageData.data;
@@ -152,10 +151,6 @@ export const renderMandalaPattern: PatternRenderer = (
       const maskIndex = (y * width + x) * 4;
       const isInsideLogo = svgMask.data[maskIndex] > 128;
       
-      // Skip if this pixel is part of the stroke outline
-      if (strokeMask && strokeMask.data[maskIndex] > 0) {
-        continue;
-      }
       
       if (isInsideLogo) {
         for (let dy = 0; dy < sampleSize && y + dy < height; dy++) {

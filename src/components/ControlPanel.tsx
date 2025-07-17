@@ -29,14 +29,14 @@ interface ControlPanelProps {
   setTileShiftAmplitude: (value: number) => void;
   shellRidgeRings: number;
   setShellRidgeRings: (value: number) => void;
-  shellRidgeDistortion: number;
-  setShellRidgeDistortion: (value: number) => void;
   strokeEnabled: boolean;
   setStrokeEnabled: (value: boolean) => void;
   strokeWidth: number;
   setStrokeWidth: (value: number) => void;
   strokeColor: string;
-  setStrokeColor: (color: string) => void;
+  setStrokeColor: (value: string) => void;
+  shellRidgeDistortion: number;
+  setShellRidgeDistortion: (value: number) => void;
   color1: string;
   color2: string;
   color3: string;

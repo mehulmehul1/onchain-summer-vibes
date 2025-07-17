@@ -13,8 +13,7 @@ export const renderGentlePattern: PatternRenderer = (
   height: number,
   timeRef: number,
   colors: any,
-  options: GentleOptions,
-  strokeMask?: ImageData | null
+  options: GentleOptions
 ) => {
   const { wavelength, lineDensity } = options;
   const data = imageData.data;
@@ -134,10 +133,6 @@ export const renderGentlePattern: PatternRenderer = (
       const maskIndex = (y * width + x) * 4;
       const isInsideLogo = svgMask.data[maskIndex] > 128;
       
-      // Skip if this pixel is part of the stroke outline
-      if (strokeMask && strokeMask.data[maskIndex] > 0) {
-        continue;
-      }
       
       if (isInsideLogo) {
         for (let dy = 0; dy < sampleSize && y + dy < height; dy++) {

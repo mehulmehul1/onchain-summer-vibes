@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { updateCanvasSize } from '../utils/canvasUtils';
+import { updateCanvasSize, renderCompleteSVG, createClippingPath } from '../utils/canvasUtils';
 import { generateSources } from '../utils/mathUtils';
 
 const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
@@ -18,7 +18,7 @@ import {
   renderShellRidgePattern,
   Line
 } from '../patterns';
-import { PATTERN_TYPES, VECTOR_FIELD_CONFIG } from '../constants/patternConfig';
+import { PATTERN_TYPES, VECTOR_FIELD_CONFIG, SVG_CONFIG } from '../constants/patternConfig';
 import { useSVGMask } from './useSVGMask';
 import type { PatternType, PatternColors } from '../constants/patternConfig';
 
@@ -48,7 +48,10 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
   const linesRef = useRef<Line[] | null>(null);
   const animationFrameIdRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
-  const { createMask, getFillMask, getStrokeMask } = useSVGMask();
+  // Cache for SVG image and clipping path
+  const svgImageRef = useRef<HTMLImageElement | null>(null);
+  const clippingPathRef = useRef<Path2D | null>(null);
+  const svgSizeRef = useRef<{width: number, height: number} | null>(null);
 
   // Update options ref when options change
   useEffect(() => {
@@ -63,6 +66,58 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
     }
   }, []);
 
+  const initializeSVG = useCallback(async (width: number, height: number) => {
+    // Check if we need to recreate SVG (size changed)
+    if (svgSizeRef.current?.width === width && svgSizeRef.current?.height === height && svgImageRef.current) {
+      return; // Already initialized for this size
+    }
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", SVG_CONFIG.width.toString());
+    svg.setAttribute("height", SVG_CONFIG.height.toString());
+    svg.setAttribute("viewBox", SVG_CONFIG.viewBox);
+
+    // Create black background path
+    const backgroundPath = document.createElementNS(svgNS, "path");
+    backgroundPath.setAttribute("d", SVG_CONFIG.backgroundPath);
+    backgroundPath.setAttribute("fill", "black");
+    svg.appendChild(backgroundPath);
+
+    // Create white shape path
+    const shapePath = document.createElementNS(svgNS, "path");
+    shapePath.setAttribute("d", SVG_CONFIG.path);
+    shapePath.setAttribute("fill", "white");
+    svg.appendChild(shapePath);
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        // Clean up previous image
+        if (svgImageRef.current) {
+          const oldUrl = svgImageRef.current.src;
+          if (oldUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(oldUrl);
+          }
+        }
+
+        svgImageRef.current = img;
+        svgSizeRef.current = { width, height };
+        
+        // Create clipping path
+        clippingPathRef.current = createClippingPath({ getContext: () => null } as any, width, height);
+        
+        URL.revokeObjectURL(svgUrl);
+        resolve();
+      };
+      img.src = svgUrl;
+    });
+  }, []);
+
   const animate = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -74,69 +129,112 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
     const currentOptions = optionsRef.current;
     
     try {
-      const fillMask = await getFillMask();
-      const strokeMask = currentOptions.strokeEnabled ? await getStrokeMask() : null;
-      const imageData = ctx.createImageData(width, height);
-      const sources = generateSources(currentOptions.sourceCount, width, height);
+      // Initialize SVG if needed
+      await initializeSVG(width, height);
+      
+      // Check if SVG is ready
+      if (!svgImageRef.current || !clippingPathRef.current) {
+        // Schedule next frame and return
+        animationFrameIdRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
+      // Clear the canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // 1. Render the cached SVG image
+      const svgAspectRatio = SVG_CONFIG.width / SVG_CONFIG.height;
+      const maxSize = Math.min(width, height) * 0.7;
 
-      // First render stroke if enabled
-      if (currentOptions.strokeEnabled && strokeMask) {
-        console.log('Rendering stroke with color:', currentOptions.strokeColor);
-        const strokeColor = hexToRgb(currentOptions.strokeColor);
-        if (strokeColor) {
-          let strokePixelCount = 0;
-          for (let i = 0; i < imageData.data.length; i += 4) {
-            const strokeAlpha = strokeMask.data[i];
-            if (strokeAlpha > 0) {
-              strokePixelCount++;
-              // Make stroke fully opaque for better visibility
-              imageData.data[i] = strokeColor.r;
-              imageData.data[i + 1] = strokeColor.g;
-              imageData.data[i + 2] = strokeColor.b;
-              imageData.data[i + 3] = 255; // Full opacity
-            }
-          }
-          console.log('Stroke pixels rendered:', strokePixelCount);
-        }
+      let drawWidth, drawHeight, drawX, drawY;
+
+      if (svgAspectRatio > width / height) {
+        drawWidth = maxSize;
+        drawHeight = maxSize / svgAspectRatio;
       } else {
-        console.log('Stroke not enabled or strokeMask is null:', {
-          strokeEnabled: currentOptions.strokeEnabled,
-          strokeMask: !!strokeMask
-        });
+        drawHeight = maxSize;
+        drawWidth = maxSize * svgAspectRatio;
       }
 
-      // Then render pattern fill on top, but avoid overwriting stroke
+      drawX = (width - drawWidth) / 2;
+      drawY = (height - drawHeight) / 2;
+
+      ctx.drawImage(svgImageRef.current, drawX, drawY, drawWidth, drawHeight);
+      
+      // 2. Save canvas state and create clipping mask for white letter areas
+      ctx.save();
+      ctx.clip(clippingPathRef.current);
+      
+      // 3. Create temporary canvas for pattern rendering
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d')!;
+      
+      const tempImageData = tempCtx.createImageData(width, height);
+      const sources = generateSources(currentOptions.sourceCount, width, height);
+      
+      // Create a simple mask that allows patterns everywhere (since clipping handles the masking)
+      const simpleMask = tempCtx.createImageData(width, height);
+      for (let i = 0; i < simpleMask.data.length; i += 4) {
+        simpleMask.data[i] = 255;     // R
+        simpleMask.data[i + 1] = 255; // G  
+        simpleMask.data[i + 2] = 255; // B
+        simpleMask.data[i + 3] = 255; // A - white everywhere
+      }
+
+      // Render stroke if enabled
+      if (currentOptions.strokeEnabled) {
+        const strokeColor = hexToRgb(currentOptions.strokeColor);
+        if (strokeColor) {
+          // For clipping approach, we don't need stroke mask - just render stroke pattern
+          for (let i = 0; i < tempImageData.data.length; i += 4) {
+            tempImageData.data[i] = strokeColor.r;
+            tempImageData.data[i + 1] = strokeColor.g;
+            tempImageData.data[i + 2] = strokeColor.b;
+            tempImageData.data[i + 3] = 255;
+          }
+        }
+      }
+
+      // Render the selected pattern
       if (currentOptions.patternType === PATTERN_TYPES.INTERFERENCE) {
-        renderInterferencePattern(imageData, fillMask, width, height, timeRef.current, currentOptions.colors, {
+        renderInterferencePattern(tempImageData, simpleMask, width, height, timeRef.current, currentOptions.colors, {
           wavelength: currentOptions.wavelength,
           sources,
           gradientMode: currentOptions.gradientMode,
           threshold: currentOptions.threshold
-        }, strokeMask);
+        });
       } else if (currentOptions.patternType === PATTERN_TYPES.GENTLE) {
-        renderGentlePattern(imageData, fillMask, width, height, timeRef.current, currentOptions.colors, {
+        renderGentlePattern(tempImageData, simpleMask, width, height, timeRef.current, currentOptions.colors, {
           wavelength: currentOptions.wavelength,
           lineDensity: currentOptions.lineDensity
-        }, strokeMask);
+        });
       } else if (currentOptions.patternType === PATTERN_TYPES.MANDALA) {
-        renderMandalaPattern(imageData, fillMask, width, height, timeRef.current, currentOptions.colors, {
+        renderMandalaPattern(tempImageData, simpleMask, width, height, timeRef.current, currentOptions.colors, {
           mandalaComplexity: currentOptions.mandalaComplexity,
           mandalaSpeed: currentOptions.mandalaSpeed
-        }, strokeMask);
+        });
       } else if (currentOptions.patternType === PATTERN_TYPES.VECTOR_FIELD) {
-        renderVectorFieldPattern(imageData, fillMask, width, height, timeRef.current, currentOptions.colors, {
+        renderVectorFieldPattern(tempImageData, simpleMask, width, height, timeRef.current, currentOptions.colors, {
           tileSize: currentOptions.tileSize,
           tileShiftAmplitude: currentOptions.tileShiftAmplitude,
           lines: linesRef.current || []
-        }, strokeMask);
+        });
       } else if (currentOptions.patternType === PATTERN_TYPES.SHELL_RIDGE) {
-        renderShellRidgePattern(imageData, fillMask, width, height, timeRef.current, currentOptions.colors, {
+        renderShellRidgePattern(tempImageData, simpleMask, width, height, timeRef.current, currentOptions.colors, {
           shellRidgeRings: currentOptions.shellRidgeRings,
           shellRidgeDistortion: currentOptions.shellRidgeDistortion
-        }, strokeMask);
+        });
       }
 
-      ctx.putImageData(imageData, 0, 0);
+      // 4. Draw the pattern to the clipped canvas (only visible in white letter areas)
+      tempCtx.putImageData(tempImageData, 0, 0);
+      ctx.drawImage(tempCanvas, 0, 0);
+      
+      // 5. Restore canvas state (removes clipping mask)
+      ctx.restore();
+
       timeRef.current += currentOptions.speed;
       animationFrameIdRef.current = requestAnimationFrame(animate);
     } catch (error) {
@@ -148,22 +246,24 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
         }
       }, 100);
     }
-  }, [getFillMask]);
+  }, []);
 
   const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const { width, height } = updateCanvasSize(canvas);
-    createMask(width, height, optionsRef.current.strokeEnabled, optionsRef.current.strokeWidth);
     initializeLines(width, height);
+    
+    // Clear cached SVG to force recreation with new size
+    svgSizeRef.current = null;
     
     if (linesRef.current) {
       linesRef.current.forEach(line => 
         line.reset(width, height, optionsRef.current.colors.color1, optionsRef.current.colors.color2, optionsRef.current.tileSize)
       );
     }
-  }, [createMask, initializeLines]);
+  }, [initializeLines]);
 
   // Initialize canvas and start animation
   useEffect(() => {
@@ -171,7 +271,6 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
     if (!canvas) return;
 
     const { width, height } = updateCanvasSize(canvas);
-    createMask(width, height, optionsRef.current.strokeEnabled, optionsRef.current.strokeWidth);
     initializeLines(width, height);
 
     window.addEventListener('resize', handleResize);
@@ -188,6 +287,11 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
       window.removeEventListener('resize', handleResize);
+      
+      // Clean up SVG blob URL
+      if (svgImageRef.current && svgImageRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(svgImageRef.current.src);
+      }
       linesRef.current = null;
     };
   }, []); // Empty dependency array - only run once on mount
@@ -203,14 +307,6 @@ export const useCanvasAnimation = (options: AnimationOptions) => {
     }
   }, [options.patternType, initializeLines]);
 
-  // Handle stroke changes
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const { width, height } = canvas;
-      createMask(width, height, options.strokeEnabled, options.strokeWidth);
-    }
-  }, [options.strokeEnabled, options.strokeWidth, options.strokeColor, createMask]);
 
   return { canvasRef };
 };

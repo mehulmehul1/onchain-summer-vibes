@@ -16,13 +16,13 @@ export const usePatternState = () => {
   const [lineDensity, setLineDensity] = useState(DEFAULT_VALUES.lineDensity);
   const [mandalaComplexity, setMandalaComplexity] = useState(DEFAULT_VALUES.mandalaComplexity);
   const [mandalaSpeed, setMandalaSpeed] = useState(DEFAULT_VALUES.mandalaSpeed);
+  const [strokeEnabled, setStrokeEnabled] = useState(DEFAULT_VALUES.strokeEnabled);
+  const [strokeWidth, setStrokeWidth] = useState(DEFAULT_VALUES.strokeWidth);
+  const [strokeColor, setStrokeColor] = useState(DEFAULT_VALUES.strokeColor);
   const [tileSize, setTileSize] = useState(DEFAULT_VALUES.tileSize);
   const [tileShiftAmplitude, setTileShiftAmplitude] = useState(DEFAULT_VALUES.tileShiftAmplitude);
   const [shellRidgeRings, setShellRidgeRings] = useState(DEFAULT_VALUES.shellRidgeRings);
   const [shellRidgeDistortion, setShellRidgeDistortion] = useState(DEFAULT_VALUES.shellRidgeDistortion);
-  const [strokeEnabled, setStrokeEnabled] = useState(DEFAULT_VALUES.strokeEnabled);
-  const [strokeWidth, setStrokeWidth] = useState(DEFAULT_VALUES.strokeWidth);
-  const [strokeColor, setStrokeColor] = useState(DEFAULT_VALUES.strokeColor);
 
   const colors = { color1, color2, color3, color4 };
 

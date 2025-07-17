@@ -56,12 +56,6 @@ const OnchainSummerWaveText: React.FC = () => {
         setShellRidgeRings={patternState.setShellRidgeRings}
         shellRidgeDistortion={patternState.shellRidgeDistortion}
         setShellRidgeDistortion={patternState.setShellRidgeDistortion}
-        strokeEnabled={patternState.strokeEnabled}
-        setStrokeEnabled={patternState.setStrokeEnabled}
-        strokeWidth={patternState.strokeWidth}
-        setStrokeWidth={patternState.setStrokeWidth}
-        strokeColor={patternState.strokeColor}
-        setStrokeColor={patternState.setStrokeColor}
         color1={patternState.color1}
         color2={patternState.color2}
         color3={patternState.color3}
@@ -73,6 +67,12 @@ const OnchainSummerWaveText: React.FC = () => {
         setDawnPreset={patternState.setDawnPreset}
         setSunrisePreset={patternState.setSunrisePreset}
         setOceanPreset={patternState.setOceanPreset}
+        strokeEnabled={patternState.strokeEnabled}
+        setStrokeEnabled={patternState.setStrokeEnabled}
+        strokeWidth={patternState.strokeWidth}
+        setStrokeWidth={patternState.setStrokeWidth}
+        strokeColor={patternState.strokeColor}
+        setStrokeColor={patternState.setStrokeColor}
       />
     </>
   );

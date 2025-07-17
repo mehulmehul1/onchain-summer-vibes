@@ -15,8 +15,7 @@ export const renderInterferencePattern: PatternRenderer = (
   height: number,
   timeRef: number,
   colors: any,
-  options: InterferenceOptions,
-  strokeMask?: ImageData | null
+  options: InterferenceOptions
 ) => {
   const { wavelength, sources, gradientMode, threshold } = options;
   const data = imageData.data;
@@ -31,10 +30,6 @@ export const renderInterferencePattern: PatternRenderer = (
       const isInsideLogo = svgMask.data[maskIndex] > 128;
       const index = (y * width + x) * 4;
 
-      // Skip if this pixel is part of the stroke outline
-      if (strokeMask && strokeMask.data[maskIndex] > 0) {
-        continue;
-      }
 
       if (isInsideLogo) {
         let amplitude = 0;
