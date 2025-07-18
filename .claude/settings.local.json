@@ -3,7 +3,14 @@
     "allow": [
       "Bash(cp:*)",
       "Bash(find:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(task-master set-status:*)",
+      "Bash(task-master show:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run:*)",
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:support.highlight.xyz)"
     ],
     "deny": []
   }

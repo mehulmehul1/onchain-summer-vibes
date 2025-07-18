@@ -4,6 +4,7 @@ export const PATTERN_TYPES = {
   MANDALA: "mandala",
   VECTOR_FIELD: "vectorfield",
   SHELL_RIDGE: "shellridge",
+  CONTOUR_INTERFERENCE: "contourinterference",
 } as const;
 
 export type PatternType = (typeof PATTERN_TYPES)[keyof typeof PATTERN_TYPES];
@@ -31,6 +32,10 @@ export const DEFAULT_VALUES = {
   strokeEnabled: false,
   strokeWidth: 3,
   strokeColor: "#000000",
+  resolution: 3,
+  numRings: 2,
+  sourcesPerRing: 6,
+  lineWidth: 0.8,
   colors: {
     color1: "#2C3E50",
     color2: "#5DADE2",

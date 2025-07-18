@@ -1,0 +1,619 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Project Structure Foundation",
+        "description": "Create highlight.xyz compatible project structure with q5.js WebGPU renderer and hl-gen.js integration",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "details": "Set up basic project structure with index.html, main.js, package.json, and library dependencies. Remove React dependencies and configure for q5.js deployment.",
+        "testStrategy": "npm run build && npm run dev to verify structure works",
+        "subtasks": [
+          {
+            "id": "1.1",
+            "title": "Create HTML Entry Point",
+            "description": "CREATE index.html with q5.js and hl-gen.js imports",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [],
+            "details": "Create HTML entry point with proper script loading order and WebGPU support detection",
+            "testStrategy": "Verify HTML loads without errors and scripts are accessible"
+          },
+          {
+            "id": "1.2",
+            "title": "Configure Package Dependencies",
+            "description": "CREATE package.json removing React dependencies, adding q5.js and build tools",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "1.1"
+            ],
+            "details": "Remove React/Vite dependencies, add q5.js, webpack, and highlight.xyz deployment tools",
+            "testStrategy": "npm install && npm run dev succeeds"
+          },
+          {
+            "id": "1.3",
+            "title": "Setup hl-gen.js Library",
+            "description": "CREATE lib/hl-gen.js from highlight.xyz GitHub repository",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "1.2"
+            ],
+            "details": "Download latest hl-gen.js from highlight.xyz GitHub and verify integrity",
+            "testStrategy": "node -e \"console.log(typeof hl)\" succeeds"
+          },
+          {
+            "id": "1.4",
+            "title": "Create Application Entry Point",
+            "description": "CREATE main.js with q5.js application initialization",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "1.3"
+            ],
+            "details": "Create main.js with basic q5.js setup and WebGPU renderer initialization",
+            "testStrategy": "npm run dev shows canvas rendering"
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "title": "q5.js Core Integration",
+        "description": "Initialize q5.js with WebGPU renderer, implement setup() and draw() functions with performance monitoring",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "details": "Set up q5.js with WebGPU acceleration, create animation loop, and add performance monitoring",
+        "testStrategy": "npm run dev shows 60fps WebGPU-accelerated animation",
+        "subtasks": [
+          {
+            "id": "2.1",
+            "title": "Initialize q5.js WebGPU Renderer",
+            "description": "CREATE src/core/Q5App.js with WebGPU renderer and Canvas 2D fallback",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "1"
+            ],
+            "details": "Initialize q5.js with WebGPU renderer, implement fallback detection and Canvas 2D backup",
+            "testStrategy": "WebGPU context creation verified in dev tools"
+          },
+          {
+            "id": "2.2",
+            "title": "Implement Animation Loop",
+            "description": "MODIFY main.js to initialize Q5App with proper error handling and animation loop",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Set up q5.js setup() and draw() functions with 60fps target frame rate",
+            "testStrategy": "60fps animation verified with frame rate counter"
+          },
+          {
+            "id": "2.3",
+            "title": "Add Performance Monitoring",
+            "description": "CREATE src/core/PerformanceMonitor.js with FPS and memory tracking",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "Implement real-time FPS counter and memory usage monitoring",
+            "testStrategy": "Performance metrics display correctly during animation"
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "title": "hl-gen.js Integration",
+        "description": "Integrate hl-gen.js for deterministic randomness, token metadata, and preview capture",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "2"
+        ],
+        "details": "Set up highlight.xyz platform integration with deterministic random number generation and NFT metadata",
+        "testStrategy": "node test/hlgen-test.js shows deterministic output and metadata generation",
+        "subtasks": [
+          {
+            "id": "3.1",
+            "title": "Create hl-gen.js Integration Layer",
+            "description": "CREATE src/blockchain/HLGenIntegration.js with error handling wrapper",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "2"
+            ],
+            "details": "Wrap hl-gen.js functions with error handling and validation",
+            "testStrategy": "Integration functions work without errors"
+          },
+          {
+            "id": "3.2",
+            "title": "Implement Token Metadata System",
+            "description": "CREATE src/blockchain/TokenMetadata.js for trait and metadata generation",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Generate token traits, names, descriptions, and rarity information",
+            "testStrategy": "Metadata generation produces valid JSON structure"
+          },
+          {
+            "id": "3.3",
+            "title": "Setup Testing Framework",
+            "description": "CREATE test/hlgen-test.js for deterministic randomness validation",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "3.2"
+            ],
+            "details": "Test deterministic randomness consistency and metadata generation",
+            "testStrategy": "Same seed produces identical output across runs"
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "title": "State Management System",
+        "description": "Convert React useState to q5.js state object with 20+ parameter management",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "3"
+        ],
+        "details": "Implement object-based state system replacing React hooks with parameter validation and persistence",
+        "testStrategy": "node test/state-test.js verifies all parameters accessible and modifiable",
+        "subtasks": [
+          {
+            "id": "4.1",
+            "title": "Create Core State System",
+            "description": "CREATE src/core/AppState.js converting React useState to object-based state",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "3"
+            ],
+            "details": "Convert 20+ React state variables to centralized state object",
+            "testStrategy": "All state parameters accessible and modifiable"
+          },
+          {
+            "id": "4.2",
+            "title": "Implement State Manager",
+            "description": "CREATE src/core/StateManager.js with persistence and validation",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Add state persistence, parameter validation, and update mechanisms",
+            "testStrategy": "State persists across sessions and validates correctly"
+          },
+          {
+            "id": "4.3",
+            "title": "Define Parameter Configuration",
+            "description": "CREATE config/parameters.js with parameter ranges and validation rules",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "4.2"
+            ],
+            "details": "Define parameter ranges, default values, and validation rules",
+            "testStrategy": "Parameter validation prevents invalid values"
+          }
+        ]
+      },
+      {
+        "id": "5",
+        "title": "Animation Engine Migration",
+        "description": "Convert useCanvasAnimation hook to q5.js animation class with frame rate control",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "4"
+        ],
+        "details": "Replace React animation hooks with q5.js animation engine using millis() for time-based animation",
+        "testStrategy": "npm run test-animation shows smooth 60fps animation",
+        "subtasks": [
+          {
+            "id": "5.1",
+            "title": "Convert Animation Hook to Class",
+            "description": "CREATE src/core/AnimationEngine.js converting useCanvasAnimation to q5.js class",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "4"
+            ],
+            "details": "Convert React animation hook to q5.js animation class with proper timing",
+            "testStrategy": "Animation loop runs smoothly without React dependencies"
+          },
+          {
+            "id": "5.2",
+            "title": "Replace React Refs with q5.js Variables",
+            "description": "MODIFY src/core/AnimationEngine.js replacing React refs with q5.js variables",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Replace React useRef with q5.js global variables and millis() timing",
+            "testStrategy": "Time-based animation works correctly with q5.js timing"
+          },
+          {
+            "id": "5.3",
+            "title": "Implement Frame Rate Controller",
+            "description": "CREATE src/core/FrameRateController.js with adaptive performance optimization",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "5.2"
+            ],
+            "details": "Add adaptive frame rate control and performance optimization",
+            "testStrategy": "Frame rate adapts to device capabilities"
+          }
+        ]
+      },
+      {
+        "id": "6",
+        "title": "SVG Masking Implementation",
+        "description": "Convert Path2D clipping to q5.js beginClip/endClip with responsive logo scaling",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "5"
+        ],
+        "details": "Implement SVG masking using q5.js clipping functions with responsive scaling",
+        "testStrategy": "node test/svg-mask-test.js shows proper logo masking",
+        "subtasks": [
+          {
+            "id": "6.1",
+            "title": "Convert SVG Clipping to q5.js",
+            "description": "CREATE src/graphics/SVGMask.js converting Path2D to q5.js clipping",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "5"
+            ],
+            "details": "Convert Path2D clipping to q5.js beginClip/endClip functions",
+            "testStrategy": "SVG masking works correctly with q5.js"
+          },
+          {
+            "id": "6.2",
+            "title": "Implement SVG Path Parser",
+            "description": "CREATE src/graphics/SVGPathParser.js for q5.js path rendering",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Parse SVG path data and convert to q5.js path commands",
+            "testStrategy": "SVG paths render correctly in q5.js"
+          },
+          {
+            "id": "6.3",
+            "title": "Add Responsive Logo Rendering",
+            "description": "CREATE src/graphics/LogoRenderer.js with responsive scaling",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "6.2"
+            ],
+            "details": "Implement responsive logo scaling and positioning",
+            "testStrategy": "Logo scales correctly on different screen sizes"
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "title": "Pattern System Foundation",
+        "description": "Create base pattern renderer class with q5.js pixel operations and WebGPU optimizations",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "6"
+        ],
+        "details": "Establish pattern system architecture with q5.js pixel operations and pattern factory",
+        "testStrategy": "node test/pattern-test.js shows pattern renderer interface working",
+        "subtasks": [
+          {
+            "id": "7.1",
+            "title": "Create Pattern Renderer Base Class",
+            "description": "CREATE src/patterns/PatternRenderer.js with q5.js pixel operations",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "6"
+            ],
+            "details": "Create base pattern renderer using loadPixels/updatePixels instead of ImageData",
+            "testStrategy": "Pattern renderer base class instantiates correctly"
+          },
+          {
+            "id": "7.2",
+            "title": "Implement Pattern Factory",
+            "description": "CREATE src/patterns/PatternFactory.js with WebGPU optimizations",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create pattern factory system with WebGPU optimization hooks",
+            "testStrategy": "Pattern factory creates patterns correctly"
+          },
+          {
+            "id": "7.3",
+            "title": "Add Pattern Utilities",
+            "description": "CREATE src/patterns/PatternUtils.js with q5.js color blending",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Convert color blending and utility functions to q5.js",
+            "testStrategy": "Color blending functions work correctly"
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "title": "Single Pattern Implementation",
+        "description": "Convert InterferencePattern from React to q5.js with WebGPU optimizations",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "7"
+        ],
+        "details": "Implement single pattern as proof of concept using q5.js pixel operations",
+        "testStrategy": "node test/interference-test.js shows pattern renders correctly",
+        "subtasks": [
+          {
+            "id": "8.1",
+            "title": "Convert Interference Pattern",
+            "description": "MODIFY src/patterns/InterferencePattern.js to use q5.js pixel operations",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "7"
+            ],
+            "details": "Convert React pattern to q5.js using loadPixels/updatePixels",
+            "testStrategy": "Interference pattern renders correctly with q5.js"
+          },
+          {
+            "id": "8.2",
+            "title": "Add Pattern Testing",
+            "description": "CREATE test/interference-test.js for pattern validation",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "8.1"
+            ],
+            "details": "Test pattern rendering with different parameters",
+            "testStrategy": "Pattern test passes with various parameter combinations"
+          },
+          {
+            "id": "8.3",
+            "title": "Implement WebGPU Optimizations",
+            "description": "CREATE src/patterns/InterferenceOptimizer.js with WebGPU optimizations",
+            "status": "pending",
+            "priority": "low",
+            "dependencies": [
+              "8.2"
+            ],
+            "details": "Add WebGPU-specific optimizations for interference pattern",
+            "testStrategy": "Pattern maintains 60fps with WebGPU acceleration"
+          }
+        ]
+      },
+      {
+        "id": "9",
+        "title": "Theme System Setup",
+        "description": "Convert React theme management to q5.js with 3 base themes and randomization",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "8"
+        ],
+        "details": "Implement theme system with Dawn, Sunrise, Ocean themes and randomization",
+        "testStrategy": "node test/theme-test.js shows theme switching works",
+        "subtasks": [
+          {
+            "id": "9.1",
+            "title": "Create Theme Manager",
+            "description": "CREATE src/themes/ThemeManager.js converting React theme management",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "8"
+            ],
+            "details": "Convert React theme management to q5.js with theme switching",
+            "testStrategy": "Theme switching works correctly"
+          },
+          {
+            "id": "9.2",
+            "title": "Define Theme Configuration",
+            "description": "CREATE config/themes.js with theme palettes and randomization",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Define theme palettes with randomization weights",
+            "testStrategy": "Theme randomization produces expected distribution"
+          },
+          {
+            "id": "9.3",
+            "title": "Implement Color Utilities",
+            "description": "CREATE src/themes/ColorUtils.js with q5.js color functions",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "9.2"
+            ],
+            "details": "Implement color manipulation functions for q5.js",
+            "testStrategy": "Color utilities work correctly with q5.js"
+          }
+        ]
+      },
+      {
+        "id": "10",
+        "title": "Build Pipeline Configuration",
+        "description": "Configure webpack for q5.js bundling and highlight.xyz deployment package creation",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          "9"
+        ],
+        "details": "Set up build pipeline for production deployment to highlight.xyz platform",
+        "testStrategy": "npm run build && npm run package creates valid deployment package",
+        "subtasks": [
+          {
+            "id": "10.1",
+            "title": "Configure Webpack Build",
+            "description": "CREATE build/webpack.config.js for q5.js bundling and optimization",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "9"
+            ],
+            "details": "Configure webpack for q5.js bundling with asset optimization",
+            "testStrategy": "Build produces optimized bundle under 2MB"
+          },
+          {
+            "id": "10.2",
+            "title": "Create Deployment Package Script",
+            "description": "CREATE build/highlight-package.js for highlight.xyz deployment",
+            "status": "pending",
+            "priority": "high",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Create script to generate highlight.xyz compatible deployment package",
+            "testStrategy": "Package script creates valid zip structure"
+          },
+          {
+            "id": "10.3",
+            "title": "Update Package Scripts",
+            "description": "MODIFY package.json with build scripts for development and production",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "10.2"
+            ],
+            "details": "Add build scripts for development and production workflows",
+            "testStrategy": "All package scripts execute successfully"
+          }
+        ]
+      },
+      {
+        "id": "11",
+        "title": "Development Tools Setup",
+        "description": "Create development controls for parameter testing and debugging",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          "10"
+        ],
+        "details": "Set up development tools for parameter testing and performance monitoring",
+        "testStrategy": "npm run dev shows development controls working",
+        "subtasks": [
+          {
+            "id": "11.1",
+            "title": "Create Development Controls",
+            "description": "CREATE src/debug/DevTools.js with parameter controls for testing",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "10"
+            ],
+            "details": "Create development UI for parameter testing and debugging",
+            "testStrategy": "Development controls modify parameters correctly"
+          },
+          {
+            "id": "11.2",
+            "title": "Add Screenshot Capture",
+            "description": "CREATE src/debug/ScreenshotCapture.js for testing screenshots",
+            "status": "pending",
+            "priority": "low",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "Implement screenshot capture for testing and validation",
+            "testStrategy": "Screenshot capture generates valid images"
+          },
+          {
+            "id": "11.3",
+            "title": "Create Performance Profiler",
+            "description": "CREATE src/debug/PerformanceProfiler.js with detailed performance metrics",
+            "status": "pending",
+            "priority": "low",
+            "dependencies": [
+              "11.2"
+            ],
+            "details": "Add detailed performance profiling for optimization",
+            "testStrategy": "Performance profiler shows accurate metrics"
+          }
+        ]
+      },
+      {
+        "id": "12",
+        "title": "Testing Framework",
+        "description": "Set up comprehensive testing with integration, visual regression, and performance tests",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          "11"
+        ],
+        "details": "Create complete testing framework for quality assurance",
+        "testStrategy": "npm test shows all tests passing",
+        "subtasks": [
+          {
+            "id": "12.1",
+            "title": "Create Integration Tests",
+            "description": "CREATE test/integration-test.js for comprehensive integration testing",
+            "status": "pending",
+            "priority": "medium",
+            "dependencies": [
+              "11"
+            ],
+            "details": "Set up integration tests for system components",
+            "testStrategy": "Integration tests pass with 80% coverage"
+          },
+          {
+            "id": "12.2",
+            "title": "Add Visual Regression Tests",
+            "description": "CREATE test/visual-regression-test.js for visual output validation",
+            "status": "pending",
+            "priority": "low",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "Create visual regression tests for pattern output validation",
+            "testStrategy": "Visual tests detect rendering changes"
+          },
+          {
+            "id": "12.3",
+            "title": "Implement Performance Benchmarks",
+            "description": "CREATE test/performance-benchmark.js for performance testing",
+            "status": "pending",
+            "priority": "low",
+            "dependencies": [
+              "12.2"
+            ],
+            "details": "Create performance benchmarking for optimization validation",
+            "testStrategy": "Performance tests meet target thresholds"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-17T15:07:27.711Z",
+      "updated": "2025-07-17T15:07:27.712Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
