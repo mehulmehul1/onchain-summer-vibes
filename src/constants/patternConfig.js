@@ -55,36 +55,89 @@ export const VECTOR_FIELD_CONFIG = {
 };
 
 export const THEME_PRESETS = {
+  // Existing themes with rarity metadata
   dawn: {
     color1: "#FFE4E1",
     color2: "#FFB6C1",
     color3: "#FFA07A",
     color4: "#FF7F50",
+    rarity: "common",
+    weight: 15
   },
   ocean: {
     color1: "#000080",
     color2: "#0066CC",
     color3: "#0099FF",
     color4: "#00CCFF",
+    rarity: "common",
+    weight: 15
   },
   forest: {
     color1: "#228B22",
     color2: "#32CD32",
     color3: "#90EE90",
     color4: "#98FB98",
+    rarity: "common",
+    weight: 15
   },
   sunset: {
     color1: "#FF4500",
     color2: "#FF6347",
     color3: "#FFD700",
     color4: "#FFFF00",
+    rarity: "uncommon",
+    weight: 12.5
   },
   midnight: {
     color1: "#191970",
     color2: "#483D8B",
     color3: "#6A5ACD",
     color4: "#9370DB",
+    rarity: "uncommon",
+    weight: 12.5
   },
+  
+  // New themes with rarity metadata
+  sunrise: {
+    color1: "#FF6B35",
+    color2: "#F7931E", 
+    color3: "#FFD23F",
+    color4: "#FFF8DC",
+    rarity: "common",
+    weight: 15
+  },
+  monochrome: {
+    color1: "#2C2C2C",
+    color2: "#5A5A5A",
+    color3: "#888888", 
+    color4: "#E0E0E0",
+    rarity: "rare",
+    weight: 6
+  },
+  neon: {
+    color1: "#FF0080",
+    color2: "#00FF80",
+    color3: "#8000FF",
+    color4: "#FFFF00",
+    rarity: "rare", 
+    weight: 6
+  },
+  pastel: {
+    color1: "#FFB3E6",
+    color2: "#E6B3FF",
+    color3: "#B3E6FF",
+    color4: "#B3FFE6",
+    rarity: "epic",
+    weight: 3
+  }
+};
+
+// Rarity distribution system
+export const THEME_RARITY = {
+  common: { weight: 60, themes: ['dawn', 'ocean', 'forest', 'sunrise'] },
+  uncommon: { weight: 25, themes: ['sunset', 'midnight'] },
+  rare: { weight: 12, themes: ['monochrome', 'neon'] },
+  epic: { weight: 3, themes: ['pastel'] }
 };
 
 export const SVG_CONFIG = {

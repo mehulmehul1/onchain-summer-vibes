@@ -5,7 +5,7 @@
  * No external dependencies - pure Canvas 2D
  */
 
-import { SVG_CONFIG, DEFAULT_VALUES, PATTERN_TYPES } from '../constants/patternConfig.js';
+import { SVG_CONFIG, DEFAULT_VALUES, PATTERN_TYPES, THEME_RARITY } from '../constants/patternConfig.js';
 import { ControlPanel } from '../ui/ControlPanel.js';
 import { InterferencePattern } from '../patterns/InterferencePattern.js';
 import { PatternRenderer } from '../patterns/PatternRenderer.js';
@@ -79,7 +79,29 @@ export class Q5App {
             [PATTERN_TYPES.CONTOUR_INTERFERENCE]: new ContourInterferencePattern()
         };
         
+        // Theme management
+        this.currentTheme = 'dawn';
+        this.themeRarity = 'common';
+        
         console.log('Q5App initialized with config:', this.config);
+    }
+    
+    /**
+     * Select theme based on rarity distribution
+     * @returns {string} - Selected theme name
+     */
+    selectThemeByRarity() {
+        const random = Math.random() * 100;
+        let cumulative = 0;
+        
+        for (const [rarity, config] of Object.entries(THEME_RARITY)) {
+            cumulative += config.weight;
+            if (random <= cumulative) {
+                const themes = config.themes;
+                return themes[Math.floor(Math.random() * themes.length)];
+            }
+        }
+        return 'dawn'; // fallback
     }
     
     async initialize() {
@@ -764,7 +786,7 @@ export class Q5App {
         this.ctx.font = '16px Arial';
         this.ctx.textAlign = 'left';
         this.ctx.fillText(
-            `Frame: ${this.frameCount} | Time: ${elapsed.toFixed(1)}s | Theme: Ocean`,
+            `Frame: ${this.frameCount} | Time: ${elapsed.toFixed(1)}s | Theme: ${this.currentTheme} (${this.themeRarity})`,
             10,
             25
         );

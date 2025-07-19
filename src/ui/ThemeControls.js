@@ -51,24 +51,30 @@ export class ThemeControls {
         const presetsGrid = document.createElement('div');
         presetsGrid.className = 'presets-grid';
         
-        // Define preset buttons with emojis and colors
+        // Define preset buttons with emojis and colors (all 8 themes)
         const presets = [
-            { key: 'dawn', label: 'Dawn', emoji: '🌅', colors: THEME_PRESETS.dawn },
-            { key: 'ocean', label: 'Ocean', emoji: '🌊', colors: THEME_PRESETS.ocean },
-            { key: 'forest', label: 'Forest', emoji: '🌲', colors: THEME_PRESETS.forest },
-            { key: 'sunset', label: 'Sunset', emoji: '🌇', colors: THEME_PRESETS.sunset },
-            { key: 'midnight', label: 'Midnight', emoji: '🌙', colors: THEME_PRESETS.midnight }
+            { key: 'dawn', label: 'Dawn', emoji: '🌅', colors: THEME_PRESETS.dawn, rarity: 'common' },
+            { key: 'ocean', label: 'Ocean', emoji: '🌊', colors: THEME_PRESETS.ocean, rarity: 'common' },
+            { key: 'forest', label: 'Forest', emoji: '🌲', colors: THEME_PRESETS.forest, rarity: 'common' },
+            { key: 'sunrise', label: 'Sunrise', emoji: '🌄', colors: THEME_PRESETS.sunrise, rarity: 'common' },
+            { key: 'sunset', label: 'Sunset', emoji: '🌇', colors: THEME_PRESETS.sunset, rarity: 'uncommon' },
+            { key: 'midnight', label: 'Midnight', emoji: '🌙', colors: THEME_PRESETS.midnight, rarity: 'uncommon' },
+            { key: 'monochrome', label: 'Mono', emoji: '⚫', colors: THEME_PRESETS.monochrome, rarity: 'rare' },
+            { key: 'neon', label: 'Neon', emoji: '💡', colors: THEME_PRESETS.neon, rarity: 'rare' },
+            { key: 'pastel', label: 'Pastel', emoji: '🎨', colors: THEME_PRESETS.pastel, rarity: 'epic' }
         ];
         
         presets.forEach(preset => {
             const button = document.createElement('button');
-            button.className = 'preset-button';
+            button.className = `preset-button rarity-${preset.rarity}`;
             button.innerHTML = `
                 <span class="preset-emoji">${preset.emoji}</span>
                 <span class="preset-label">${preset.label}</span>
+                <span class="preset-rarity">${preset.rarity}</span>
             `;
-            button.title = `Apply ${preset.label} theme`;
+            button.title = `Apply ${preset.label} theme (${preset.rarity})`;
             button.dataset.preset = preset.key;
+            button.dataset.rarity = preset.rarity;
             
             // Create color preview
             const preview = document.createElement('div');
@@ -186,7 +192,7 @@ export class ThemeControls {
             
             .presets-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
             }
             
@@ -229,6 +235,67 @@ export class ThemeControls {
                 text-align: center;
                 position: relative;
                 z-index: 1;
+            }
+            
+            .preset-rarity {
+                font-size: 9px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                position: relative;
+                z-index: 1;
+                margin-top: 2px;
+                opacity: 0.7;
+            }
+            
+            /* Rarity-based styling */
+            .rarity-common {
+                border-color: rgba(76, 175, 80, 0.3);
+            }
+            
+            .rarity-common:hover {
+                border-color: rgba(76, 175, 80, 0.5);
+                box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+            }
+            
+            .rarity-uncommon {
+                border-color: rgba(255, 152, 0, 0.3);
+            }
+            
+            .rarity-uncommon:hover {
+                border-color: rgba(255, 152, 0, 0.5);
+                box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+            }
+            
+            .rarity-rare {
+                border-color: rgba(156, 39, 176, 0.3);
+            }
+            
+            .rarity-rare:hover {
+                border-color: rgba(156, 39, 176, 0.5);
+                box-shadow: 0 2px 8px rgba(156, 39, 176, 0.2);
+            }
+            
+            .rarity-epic {
+                border-color: rgba(244, 67, 54, 0.3);
+                position: relative;
+            }
+            
+            .rarity-epic::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(45deg, rgba(244, 67, 54, 0.1), rgba(156, 39, 176, 0.1));
+                border-radius: 7px;
+                z-index: 0;
+            }
+            
+            .rarity-epic:hover {
+                border-color: rgba(244, 67, 54, 0.5);
+                box-shadow: 0 2px 12px rgba(244, 67, 54, 0.3);
             }
             
             .preset-preview {
