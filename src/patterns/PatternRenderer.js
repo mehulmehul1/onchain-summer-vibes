@@ -329,6 +329,15 @@ export class PatternRenderer {
     }
 
     /**
+     * Calculate pattern complexity based on parameters - override in subclasses
+     * @param {Object} params - Pattern parameters
+     * @returns {number} - Complexity score (1-100)
+     */
+    calculateComplexity(params = {}) {
+        throw new Error('calculateComplexity method must be implemented by subclasses');
+    }
+
+    /**
      * Get pattern info
      * @returns {Object} - Pattern information
      */

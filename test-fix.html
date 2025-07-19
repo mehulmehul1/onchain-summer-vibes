@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Clipping Fix Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        
+        #artCanvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .info {
+            text-align: center;
+            margin: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>SVG Clipping Fix Test</h1>
+        <p>Testing the fix for SVG clipping issue</p>
+        <div id="status" class="status">Initializing...</div>
+    </div>
+    
+    <canvas id="artCanvas" width="800" height="400"></canvas>
+    
+    <div class="info">
+        <h3>Expected Result:</h3>
+        <p>Blue pattern should fill the letter shapes with black outline visible around them</p>
+        <p><strong>Before fix:</strong> Pattern was only visible in small areas where it didn't overlap with black outline</p>
+        <p><strong>After fix:</strong> Pattern fills letter shapes completely with black outline properly framing them</p>
+    </div>
+
+    <script type="module">
+        import { Q5App } from './src/core/Q5App-minimal.js';
+        
+        async function testFix() {
+            const statusDiv = document.getElementById('status');
+            
+            try {
+                statusDiv.textContent = 'Initializing Q5App...';
+                statusDiv.className = 'status';
+                
+                const config = {
+                    canvas: { targetFPS: 60 },
+                    debug: true
+                };
+                
+                const app = new Q5App(config);
+                await app.initialize();
+                
+                statusDiv.textContent = 'Q5App initialized successfully! Check canvas for pattern.';
+                statusDiv.className = 'status success';
+                
+                console.log('Test completed successfully');
+                console.log('Expected: Pattern fills letter shapes with black outline visible');
+                console.log('Check that patterns are not being covered by the black outline');
+                
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error.message;
+                statusDiv.className = 'status error';
+                console.error('Test failed:', error);
+            }
+        }
+        
+        // Run test when page loads
+        testFix();
+    </script>
+</body>
+</html>

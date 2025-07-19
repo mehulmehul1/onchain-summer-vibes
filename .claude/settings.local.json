@@ -10,7 +10,8 @@
       "Bash(npm run:*)",
       "Bash(ls:*)",
       "Bash(node:*)",
-      "WebFetch(domain:support.highlight.xyz)"
+      "WebFetch(domain:support.highlight.xyz)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }

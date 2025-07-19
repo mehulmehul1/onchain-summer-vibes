@@ -138,6 +138,55 @@ export class PatternControls {
                 patterns: [PATTERN_TYPES.GENTLE]
             },
             {
+                key: 'baseLineWidth',
+                label: 'Base Line Width',
+                type: 'range',
+                min: 0.5,
+                max: 8.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
+                key: 'lineWidthVariation',
+                label: 'Width Variation',
+                type: 'range',
+                min: 0,
+                max: 5.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
+                key: 'visualStyle',
+                label: 'Visual Style',
+                type: 'select',
+                options: ['smooth', 'sketchy', 'glow', 'dotted'],
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
+                key: 'directionInteraction',
+                label: 'Direction Mixing',
+                type: 'range',
+                min: 0,
+                max: 100,
+                step: 1,
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
+                key: 'textureIntensity',
+                label: 'Texture',
+                type: 'range',
+                min: 0,
+                max: 100,
+                step: 1,
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
+                key: 'useGradientStrokes',
+                label: 'Gradient Strokes',
+                type: 'checkbox',
+                patterns: [PATTERN_TYPES.GENTLE]
+            },
+            {
                 key: 'mandalaComplexity',
                 label: 'Complexity',
                 type: 'range',

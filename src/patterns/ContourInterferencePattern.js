@@ -36,19 +36,18 @@ export class ContourInterferencePattern extends PatternRenderer {
         this.field = null;
     }
 
-    initialize() {
-        super.initialize();
-
+    initialize(width, height) {
         // Clear existing sources
         this.sources = [];
 
-        const width = this.canvas.width;
-        const height = this.canvas.height;
+        // Use provided width/height or defaults
+        const w = width || 800;
+        const h = height || 600;
 
         // Add central source
         this.sources.push({
-            x: width/2,
-            y: height/2,
+            x: w/2,
+            y: h/2,
             wavelength: 25,
             phase: 0,
             amplitude: 1.5
@@ -62,8 +61,8 @@ export class ContourInterferencePattern extends PatternRenderer {
             for (let i = 0; i < numSources; i++) {
                 const angle = (i / numSources) * this.TWO_PI;
                 this.sources.push({
-                    x: width/2 + Math.cos(angle) * radius,
-                    y: height/2 + Math.sin(angle) * radius,
+                    x: w/2 + Math.cos(angle) * radius,
+                    y: h/2 + Math.sin(angle) * radius,
                     wavelength: 20 + ring * 5,
                     phase: (i / numSources) * Math.PI,
                     amplitude: 1.0 - ring * 0.2
@@ -72,8 +71,8 @@ export class ContourInterferencePattern extends PatternRenderer {
         }
 
         // Pre-allocate field array based on resolution
-        const rows = Math.floor(height / this.parameters.resolution);
-        const cols = Math.floor(width / this.parameters.resolution);
+        const rows = Math.floor(h / this.parameters.resolution);
+        const cols = Math.floor(w / this.parameters.resolution);
         this.field = new Array(rows).fill(0).map(() => new Array(cols).fill(0));
     }
 
@@ -87,9 +86,7 @@ export class ContourInterferencePattern extends PatternRenderer {
     }
 
     // Calculate field values
-    updateField(time) {
-        const width = this.canvas.width;
-        const height = this.canvas.height;
+    updateField(time, width, height) {
         const resolution = this.parameters.resolution;
         const rows = Math.floor(height / resolution);
         const cols = Math.floor(width / resolution);
@@ -121,15 +118,15 @@ export class ContourInterferencePattern extends PatternRenderer {
     }
 
     // Draw contours using marching squares algorithm
-    drawContours(time) {
+    drawContours(ctx) {
         const resolution = this.parameters.resolution;
         const rows = this.field.length;
         const cols = this.field[0].length;
 
         this.contourLevels.forEach((level, index) => {
             // Vary line weight based on contour level
-            strokeWeight(index % 2 === 0 ? this.parameters.lineWidth : this.parameters.lineWidth * 0.625);
-            beginShape();
+            ctx.lineWidth = index % 2 === 0 ? this.parameters.lineWidth : this.parameters.lineWidth * 0.625;
+            ctx.beginPath();
 
             for (let i = 0; i < rows - 1; i++) {
                 for (let j = 0; j < cols - 1; j++) {
@@ -155,15 +152,15 @@ export class ContourInterferencePattern extends PatternRenderer {
                         (v01 > level ? 1 : 0);
 
                     // Draw appropriate line segments based on case
-                    this.drawContourCase(case4, x, y, resolution, level, v00, v10, v11, v01);
+                    this.drawContourCase(ctx, case4, x, y, resolution, level, v00, v10, v11, v01);
                 }
             }
 
-            endShape();
+            ctx.stroke();
         });
     }
 
-    drawContourCase(case4, x, y, resolution, level, v00, v10, v11, v01) {
+    drawContourCase(ctx, case4, x, y, resolution, level, v00, v10, v11, v01) {
         let x1, y1, x2, y2;
 
         switch (case4) {
@@ -225,13 +222,13 @@ export class ContourInterferencePattern extends PatternRenderer {
                 // Handle saddle points with two line segments
                 const t1 = this.safeDiv(level - v00, v01 - v00);
                 const t2 = this.safeDiv(level - v00, v10 - v00);
-                line(x, this.lerp(y, y + resolution, t1),
-                     this.lerp(x, x + resolution, t2), y);
+                ctx.moveTo(x, this.lerp(y, y + resolution, t1));
+                ctx.lineTo(this.lerp(x, x + resolution, t2), y);
 
                 const t3 = this.safeDiv(level - v11, v10 - v11);
                 const t4 = this.safeDiv(level - v11, v01 - v11);
-                line(x + resolution, this.lerp(y + resolution, y, t3),
-                     this.lerp(x + resolution, x, t4), y + resolution);
+                ctx.moveTo(x + resolution, this.lerp(y + resolution, y, t3));
+                ctx.lineTo(this.lerp(x + resolution, x, t4), y + resolution);
                 return;
             }
             default:
@@ -240,23 +237,32 @@ export class ContourInterferencePattern extends PatternRenderer {
 
         // Draw the line segment
         if (x1 !== undefined) {
-            line(x1, y1, x2, y2);
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
         }
     }
 
-    renderPattern(time) {
-        // Clear background
-        background(this.colors.backgroundColor);
+    render(ctx, time, width, height, colors, options = {}) {
+        // Initialize if needed
+        if (!this.field || this.field.length === 0) {
+            this.initialize(width, height);
+        }
+        
+        // Update parameters from options
+        this.parameters = { ...this.parameters, ...options };
+        
+        // Clear background with provided colors
+        ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
+        ctx.fillRect(0, 0, width, height);
         
         // Set line style
-        stroke(this.colors.lineColor);
-        noFill();
-
+        ctx.strokeStyle = `rgb(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]})`;
+        
         // Update field values
-        this.updateField(time * this.parameters.animationSpeed);
+        this.updateField(time * this.parameters.animationSpeed, width, height);
         
         // Draw contours
-        this.drawContours(time);
+        this.drawContours(ctx);
     }
 
     calculateComplexity(params = this.parameters) {

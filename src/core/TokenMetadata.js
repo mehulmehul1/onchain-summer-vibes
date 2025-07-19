@@ -1,4 +1,8 @@
 import { hlGen } from './HLGenIntegration.js';
+import { GentlePattern } from '../patterns/GentlePattern.js';
+import { MandalaPattern } from '../patterns/MandalaPattern.js';
+import { VectorFieldPattern } from '../patterns/VectorFieldPattern.js';
+import { ShellRidgePattern } from '../patterns/ShellRidgePattern.js';
 
 /**
  * Manages the generation and setting of NFT metadata using hl-gen.js.
@@ -46,20 +50,71 @@ export class TokenMetadata {
   }
 
   /**
-   * A placeholder for a more complex complexity calculation.
+   * Calculate pattern complexity using pattern-specific methods.
    * @param {string} pattern - The name of the pattern.
    * @param {object} params - The pattern parameters.
-   * @returns {string} The complexity level ('Low', 'Medium', 'High').
+   * @param {object} app - The app instance for interference pattern complexity
+   * @returns {string} The complexity level ('Low', 'Medium', 'High', 'Very High').
    */
-  static calculateComplexity(pattern, params) {
-    // This is a simplified example.
-    let score = 0;
-    if (params) {
-        score = Object.values(params).reduce((acc, val) => typeof val === 'number' ? acc + val : acc, 0);
+  static calculateComplexity(pattern, params, app = null) {
+    let score = 50; // Default score
+    
+    try {
+      switch (pattern?.toLowerCase()) {
+        case 'gentle':
+          const gentlePattern = new GentlePattern();
+          score = gentlePattern.calculateComplexity(params);
+          break;
+          
+        case 'mandala':
+          const mandalaPattern = new MandalaPattern();
+          score = mandalaPattern.calculateComplexity(params);
+          break;
+          
+        case 'vectorfield':
+        case 'vector_field':
+          const vectorFieldPattern = new VectorFieldPattern();
+          score = vectorFieldPattern.calculateComplexity(params);
+          break;
+          
+        case 'shellridge':
+        case 'shell_ridge':
+          const shellRidgePattern = new ShellRidgePattern();
+          score = shellRidgePattern.calculateComplexity(params);
+          break;
+          
+        case 'interference':
+          // Use app instance method for interference pattern
+          if (app && typeof app.calculateInterferenceComplexity === 'function') {
+            score = app.calculateInterferenceComplexity(params);
+          } else {
+            // Fallback calculation for interference pattern
+            const { sourceCount = 9, wavelength = 25, threshold = 0.12, gradientMode = true } = params || {};
+            score = 35;
+            score += Math.min(sourceCount / 20, 1) * 40;
+            score += Math.max(0, 1 - (wavelength / 100)) * 15;
+            score += threshold * 5;
+            if (gradientMode) score += 5;
+          }
+          break;
+          
+        default:
+          console.warn(`Unknown pattern '${pattern}', using default complexity calculation`);
+          // Fallback to simple parameter-based calculation
+          if (params) {
+            score = Object.values(params).reduce((acc, val) => 
+              typeof val === 'number' ? acc + Math.abs(val) * 0.5 : acc, 30);
+          }
+      }
+    } catch (error) {
+      console.error('Error calculating pattern complexity:', error);
+      score = 50; // Safe fallback
     }
-
-    if (score < 100) return 'Low';
-    if (score < 200) return 'Medium';
-    return 'High';
+    
+    // Map numeric score to descriptive string
+    if (score < 30) return 'Low';
+    if (score < 50) return 'Medium';
+    if (score < 75) return 'High';
+    return 'Very High';
   }
 }

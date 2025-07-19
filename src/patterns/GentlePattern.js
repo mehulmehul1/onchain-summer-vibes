@@ -116,6 +116,31 @@ export class GentlePattern {
             ctx.stroke();
         }
     }
+
+    /**
+     * Calculate pattern complexity based on parameters
+     * @param {Object} params - Pattern parameters
+     * @returns {number} - Complexity score (1-100)
+     */
+    calculateComplexity(params = {}) {
+        const { wavelength = 25, lineDensity = 35 } = params;
+        
+        // Base complexity starts at 20
+        let complexity = 20;
+        
+        // Line density contributes most to complexity (40 points max)
+        const densityFactor = Math.min(lineDensity / 100, 1); // Normalize to 0-1
+        complexity += densityFactor * 40;
+        
+        // Wavelength affects complexity inversely (smaller wavelength = more complex)
+        const wavelengthFactor = Math.max(0, 1 - (wavelength / 100)); // Normalize inversely
+        complexity += wavelengthFactor * 30;
+        
+        // Additional complexity from multiple line types (horizontal, vertical, diagonal)
+        complexity += 10; // Fixed bonus for multi-directional lines
+        
+        return Math.min(Math.max(Math.round(complexity), 1), 100);
+    }
 }
 
 export default GentlePattern;

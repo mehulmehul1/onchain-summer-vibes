@@ -172,6 +172,31 @@ export class VectorFieldPattern {
             line.draw(ctx);
         });
     }
+
+    /**
+     * Calculate pattern complexity based on parameters
+     * @param {Object} params - Pattern parameters
+     * @returns {number} - Complexity score (1-100)
+     */
+    calculateComplexity(params = {}) {
+        const { tileSize = 55, tileShiftAmplitude = 10 } = params;
+        
+        // Base complexity starts at 40 (high due to particle system)
+        let complexity = 40;
+        
+        // Tile size affects complexity inversely (smaller tiles = more computation)
+        const tileFactor = Math.max(0, 1 - (tileSize / 100)); // Normalize inversely
+        complexity += tileFactor * 35;
+        
+        // Tile shift amplitude adds dynamic complexity
+        const shiftFactor = Math.min(tileShiftAmplitude / 20, 1); // Normalize to 0-1
+        complexity += shiftFactor * 15;
+        
+        // Additional complexity from 400 animated lines with vector field calculations
+        complexity += 10; // Fixed bonus for particle system complexity
+        
+        return Math.min(Math.max(Math.round(complexity), 1), 100);
+    }
 }
 
 export default VectorFieldPattern;

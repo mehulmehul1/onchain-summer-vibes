@@ -4,9 +4,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Project Overview
 
-This is a **React TypeScript wave pattern visualization system** that creates animated wave patterns masked to fill vector logo shapes. The system features multiple pattern types, real-time controls, and modular architecture. It's now enhanced with the **PRP Framework** for structured AI-assisted development.
+This is a **q5.js Canvas 2D wave pattern visualization system** that creates animated wave patterns masked to fill vector logo shapes. The system features multiple pattern types, real-time controls, and modular architecture. It's enhanced with the **PRP Framework** for structured AI-assisted development.
 
 **Core Concept**: This project combines a sophisticated wave pattern system with **"PRP = PRD + curated codebase intelligence + agent/runbook"** - designed to enable AI agents to ship production-ready code on the first pass.
+
+## 🚨 CRITICAL: WORKING SVG CLIPPING CONFIGURATION - NEVER BREAK THIS! 🚨
+
+### Current WORKING Setup (src/core/Q5App-minimal.js):
+```javascript
+// MAIN DRAW LOOP - EXACT ORDER MATTERS:
+draw() {
+    // 1. White background first
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // 2. Draw black border (backgroundPath) - SOLID BLACK, NO PATTERN
+    this.drawLogoBackground();
+    
+    // 3. Render pattern ONLY inside white letterforms (path)
+    this.renderWithSVGClip(elapsed);
+}
+
+// SVG CLIPPING METHOD - WORKING IMPLEMENTATION:
+renderWithSVGClip(elapsed) {
+    // 1. Render pattern to off-screen canvas
+    const patternCanvas = document.createElement('canvas');
+    this.renderPattern(patternCtx, elapsed, width, height);
+    
+    // 2. Apply clipping with logo letterforms (WHITE PATH ONLY)
+    this.ctx.save();
+    this.ctx.translate(width / 2, height / 2);
+    this.ctx.scale(scale, scale);
+    this.ctx.translate(-SVG_CONFIG.width / 2, -SVG_CONFIG.height / 2);
+    this.ctx.clip(this.logoPath2D); // WHITE LETTERFORMS ONLY
+    
+    // 3. Reset transform but KEEP clip active
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // 4. Draw pattern through clip
+    this.ctx.drawImage(patternCanvas, 0, 0);
+    this.ctx.restore();
+}
+```
+
+### CRITICAL RULES - NEVER VIOLATE:
+1. **Background**: Always white (`#ffffff`) for visibility
+2. **Black border**: Uses `backgroundPath` - stays SOLID BLACK, never filled with pattern
+3. **Pattern clipping**: Uses `path` (white letterforms) - ONLY this gets pattern fill
+4. **Order**: White background → Black border → Clipped pattern
+5. **Transform handling**: Set transform, apply clip, reset transform, THEN draw
+6. **Off-screen rendering**: Pattern rendered to off-screen canvas first, then drawn through clip
 
 ## Core Architecture
 

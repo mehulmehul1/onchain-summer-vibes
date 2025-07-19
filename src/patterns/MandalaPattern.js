@@ -140,6 +140,31 @@ export class MandalaPattern {
             }
         }
     }
+
+    /**
+     * Calculate pattern complexity based on parameters
+     * @param {Object} params - Pattern parameters
+     * @returns {number} - Complexity score (1-100)
+     */
+    calculateComplexity(params = {}) {
+        const { mandalaComplexity = 6, mandalaSpeed = 1.0 } = params;
+        
+        // Base complexity starts at 25
+        let complexity = 25;
+        
+        // Mandala complexity contributes most (50 points max)
+        const complexityFactor = Math.min(mandalaComplexity / 20, 1); // Normalize to 0-1
+        complexity += complexityFactor * 50;
+        
+        // Speed affects computational complexity (15 points max)
+        const speedFactor = Math.min(mandalaSpeed / 3, 1); // Normalize to 0-1
+        complexity += speedFactor * 15;
+        
+        // Additional complexity from geometric shapes and breathing animations
+        complexity += 10; // Fixed bonus for geometric complexity
+        
+        return Math.min(Math.max(Math.round(complexity), 1), 100);
+    }
 }
 
 export default MandalaPattern;

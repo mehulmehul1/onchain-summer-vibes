@@ -6,6 +6,11 @@
 
 import { PatternRenderer } from './PatternRenderer.js';
 import { ContourInterferencePattern } from './ContourInterferencePattern.js';
+import { GentlePattern } from './GentlePattern.js';
+import { MandalaPattern } from './MandalaPattern.js';
+import { VectorFieldPattern } from './VectorFieldPattern.js';
+import { ShellRidgePattern } from './ShellRidgePattern.js';
+import { PATTERN_TYPES } from '../constants/patternConfig.js';
 
 export class PatternFactory {
     constructor() {
@@ -306,20 +311,52 @@ export class PatternFactory {
             }
         });
         
-        // Register ContourInterference pattern
-        this.registerPattern(PATTERN_TYPES.CONTOUR_INTERFERENCE, ContourInterferencePattern, {
-            description: 'Wave interference visualization using marching squares algorithm',
+        // Register Gentle pattern
+        this.registerPattern(PATTERN_TYPES.GENTLE, GentlePattern, {
+            description: 'Flowing sinusoidal lines pattern',
             category: 'waves',
-            complexity: 'high',
-            webgpuOptimized: true,
+            complexity: 'medium',
+            webgpuOptimized: false,
             defaultParams: {
-                resolution: 3,
-                numRings: 2,
-                sourcesPerRing: 6,
-                animationSpeed: 0.0015,
-                lineWidth: 0.8,
-                lineColor: '#333333',
-                backgroundColor: '#F0EEE6'
+                wavelength: 25,
+                lineDensity: 35,
+                speed: 0.018
+            }
+        });
+
+        // Register Mandala pattern
+        this.registerPattern(PATTERN_TYPES.MANDALA, MandalaPattern, {
+            description: 'Geometric mandala with breathing animations',
+            category: 'geometric',
+            complexity: 'medium',
+            webgpuOptimized: false,
+            defaultParams: {
+                mandalaComplexity: 6,
+                mandalaSpeed: 1.0
+            }
+        });
+
+        // Register Vector Field pattern
+        this.registerPattern(PATTERN_TYPES.VECTOR_FIELD, VectorFieldPattern, {
+            description: 'Particle flow following vector fields',
+            category: 'particles',
+            complexity: 'high',
+            webgpuOptimized: false,
+            defaultParams: {
+                tileSize: 55,
+                tileShiftAmplitude: 10
+            }
+        });
+
+        // Register Shell Ridge pattern
+        this.registerPattern(PATTERN_TYPES.SHELL_RIDGE, ShellRidgePattern, {
+            description: 'Concentric shell-like ridges with breathing effects',
+            category: 'geometric',
+            complexity: 'medium',
+            webgpuOptimized: false,
+            defaultParams: {
+                shellRidgeRings: 25,
+                shellRidgeDistortion: 8
             }
         });
 

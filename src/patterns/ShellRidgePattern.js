@@ -75,6 +75,31 @@ export class ShellRidgePattern {
             }
         }
     }
+
+    /**
+     * Calculate pattern complexity based on parameters
+     * @param {Object} params - Pattern parameters
+     * @returns {number} - Complexity score (1-100)
+     */
+    calculateComplexity(params = {}) {
+        const { shellRidgeRings = 25, shellRidgeDistortion = 8 } = params;
+        
+        // Base complexity starts at 30
+        let complexity = 30;
+        
+        // Number of rings contributes most to complexity (45 points max)
+        const ringsFactor = Math.min(shellRidgeRings / 50, 1); // Normalize to 0-1
+        complexity += ringsFactor * 45;
+        
+        // Distortion adds computational complexity (20 points max)
+        const distortionFactor = Math.min(shellRidgeDistortion / 15, 1); // Normalize to 0-1
+        complexity += distortionFactor * 20;
+        
+        // Additional complexity from textured surfaces and breathing effects
+        complexity += 5; // Fixed bonus for textural complexity
+        
+        return Math.min(Math.max(Math.round(complexity), 1), 100);
+    }
 }
 
 export default ShellRidgePattern;
