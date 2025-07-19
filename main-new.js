@@ -5,7 +5,7 @@
  * FRESH BUILD: No require statements - ES modules only
  */
 
-import { Q5App } from './src/core/Q5App-minimal.js';
+import { Q5App } from './src/core/Q5App.js';
 
 // Browser-compatible task logging functions
 const startTask = (taskId) => console.log(`Starting task: ${taskId}`);
