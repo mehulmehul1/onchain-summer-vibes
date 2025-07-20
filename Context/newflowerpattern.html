@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushroom Field Growth - p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #F0EEE6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        
+        #canvas-container {
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 280px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .controls h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #34495e;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ecf0f1;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+        }
+        
+        .value-display {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: right;
+            margin-top: 2px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: #c0392b;
+            transform: translateY(-1px);
+        }
+        
+        .clear-btn {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            background: #7f8c8d;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="canvas-container"></div>
+        
+        <div class="controls">
+            <h3>🍄 Growth Controls</h3>
+            
+            <div class="control-group">
+                <label for="growthSpeed">Growth Speed</label>
+                <input type="range" id="growthSpeed" min="0.1" max="3.0" step="0.1" value="1.0">
+                <div class="value-display" id="growthSpeedValue">1.0x</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="spawnRate">Spawn Rate</label>
+                <input type="range" id="spawnRate" min="10" max="120" step="5" value="45">
+                <div class="value-display" id="spawnRateValue">45 frames</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="densityVariation">Density Variety</label>
+                <input type="range" id="densityVariation" min="0.1" max="3.0" step="0.1" value="1.0">
+                <div class="value-display" id="densityVariationValue">1.0x</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="sizeVariation">Size Variety</label>
+                <input type="range" id="sizeVariation" min="0.3" max="2.5" step="0.1" value="1.0">
+                <div class="value-display" id="sizeVariationValue">1.0x</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="irregularity">Organic Irregularity</label>
+                <input type="range" id="irregularity" min="0.0" max="1.0" step="0.05" value="0.2">
+                <div class="value-display" id="irregularityValue">0.20</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="clusterTendency">Clustering</label>
+                <input type="range" id="clusterTendency" min="0.0" max="1.0" step="0.05" value="0.75">
+                <div class="value-display" id="clusterTendencyValue">0.75</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="centerBias">Center Bias</label>
+                <input type="range" id="centerBias" min="0.1" max="1.0" step="0.05" value="0.5">
+                <div class="value-display" id="centerBiasValue">0.50</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="opacity">Opacity</label>
+                <input type="range" id="opacity" min="0.1" max="1.0" step="0.05" value="0.5">
+                <div class="value-display" id="opacityValue">0.50</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="lifespan">Lifespan</label>
+                <input type="range" id="lifespan" min="0.3" max="3.0" step="0.1" value="1.0">
+                <div class="value-display" id="lifespanValue">1.0x</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="maxRadiators">Max Colonies</label>
+                <input type="range" id="maxRadiators" min="10" max="150" step="5" value="60">
+                <div class="value-display" id="maxRadiatorsValue">60</div>
+            </div>
+            
+            <div class="button-group">
+                <button class="reset-btn" onclick="resetControls()">Reset</button>
+                <button class="clear-btn" onclick="clearCanvas()">Clear</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let animationTime = 0;
+        let radiators = [];
+        
+        // Control variables
+        let controls = {
+            growthSpeed: 1.0,
+            spawnRate: 45,
+            densityVariation: 1.0,
+            sizeVariation: 1.0,
+            irregularity: 0.2,
+            clusterTendency: 0.75,
+            centerBias: 0.5,
+            opacity: 0.5,
+            lifespan: 1.0,
+            maxRadiators: 60
+        };
+
+        class Radiator {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = random(40) + 10;
+                
+                // Highly variable density - controlled by densityVariation
+                const densityType = random();
+                const densityMultiplier = controls.densityVariation;
+                
+                if (densityType < 0.3) {
+                    // Sparse growth (small patches)
+                    this.lines = floor((random(40) + 15) * densityMultiplier);
+                } else if (densityType < 0.7) {
+                    // Medium density (original range)
+                    this.lines = floor((random(150) + 100) * densityMultiplier);
+                } else {
+                    // Very dense growth (fairy rings)
+                    this.lines = floor((random(300) + 200) * densityMultiplier);
+                }
+                
+                // Variable growth speeds controlled by growthSpeed
+                this.baseGrowth = (random(0.8) + 0.2) * 0.125;
+                
+                // Much more variation in size - controlled by sizeVariation
+                const sizeType = random();
+                const sizeMultiplier = controls.sizeVariation;
+                
+                if (sizeType < 0.2) {
+                    // Tiny clusters
+                    this.maxLength = (random(25) + 10) * sizeMultiplier;
+                } else if (sizeType < 0.6) {
+                    // Medium clusters
+                    this.maxLength = (random(80) + 40) * sizeMultiplier;
+                } else if (sizeType < 0.9) {
+                    // Large clusters
+                    this.maxLength = (random(150) + 80) * sizeMultiplier;
+                } else {
+                    // Giant fairy rings
+                    this.maxLength = (random(250) + 150) * sizeMultiplier;
+                }
+                
+                this.age = 0;
+                this.baseLifespan = (random(400) + 200) * 4;
+                this.opacity = 0;
+                
+                // Natural irregularity controlled by irregularity parameter
+                this.irregularityAmount = random(0.3) + 0.1;
+                this.angleOffset = random(TWO_PI);
+            }
+
+            update() {
+                this.age++;
+                
+                // Apply lifespan multiplier
+                const currentLifespan = this.baseLifespan * controls.lifespan;
+                
+                if (this.age < currentLifespan * 0.2) {
+                    this.opacity = min(1, this.age / (currentLifespan * 0.2));
+                } else if (this.age > currentLifespan * 0.8) {
+                    this.opacity = max(0, 1 - (this.age - currentLifespan * 0.8) / (currentLifespan * 0.2));
+                } else {
+                    this.opacity = 1;
+                }
+            }
+
+            draw() {
+                // Apply growth speed multiplier
+                const currentGrowth = this.baseGrowth * controls.growthSpeed;
+                const currentLength = min(this.maxLength, this.age * currentGrowth);
+                const centerRadius = 1 + this.age * 0.0025;
+                
+                push();
+                translate(this.x, this.y);
+                
+                // Draw radial lines
+                for (let i = 0; i < this.lines; i++) {
+                    const baseAngle = (i / this.lines) * TWO_PI + this.angleOffset;
+                    
+                    // Apply irregularity control
+                    const irregularityEffect = controls.irregularity * this.irregularityAmount;
+                    const angle = baseAngle + (sin(baseAngle * 3) * irregularityEffect);
+                    
+                    // Vary length slightly for organic feel
+                    const lengthVariation = 0.8 + sin(baseAngle * 7) * 0.2;
+                    const length = currentLength * lengthVariation;
+                    
+                    // Vary line thickness based on density and position
+                    const thicknessVariation = 0.2 + (this.lines / 500) + random(0.1);
+                    strokeWeight(thicknessVariation);
+                    
+                    // Apply opacity control
+                    const finalOpacity = this.opacity * controls.opacity * 127;
+                    stroke(51, 51, 51, finalOpacity);
+                    
+                    line(0, 0, cos(angle) * length, sin(angle) * length);
+                }
+                
+                // Draw center point
+                const centerOpacity = this.opacity * controls.opacity * 204;
+                fill(0, 0, 0, centerOpacity);
+                noStroke();
+                circle(0, 0, centerRadius * 2);
+                
+                pop();
+            }
+
+            isDead() {
+                return this.age > this.baseLifespan * controls.lifespan;
+            }
+        }
+
+        function spawnRadiator() {
+            if (radiators.length < controls.maxRadiators) {
+                let baseX, baseY;
+                
+                if (radiators.length > 0 && random() < controls.clusterTendency) {
+                    const parent = radiators[floor(random(radiators.length))];
+                    const angle = random(TWO_PI);
+                    
+                    // Variable clustering distance for organic patterns
+                    let distance;
+                    if (random() < 0.4) {
+                        // Close clustering (dense patches)
+                        distance = random(30) + 15;
+                    } else {
+                        // Moderate spread
+                        distance = random(80) + 30;
+                    }
+                    
+                    baseX = parent.x + cos(angle) * distance;
+                    baseY = parent.y + sin(angle) * distance;
+                } else {
+                    // Apply center bias control
+                    const centerBias = random(0.6) + 0.4 * controls.centerBias;
+                    baseX = width/2 + (random() - 0.5) * width * centerBias;
+                    baseY = height/2 + (random() - 0.5) * height * centerBias;
+                }
+                
+                baseX = max(50, min(width - 50, baseX));
+                baseY = max(50, min(height - 50, baseY));
+                
+                radiators.push(new Radiator(baseX, baseY));
+            }
+        }
+
+        function setup() {
+            let canvas = createCanvas(550, 550);
+            canvas.parent('canvas-container');
+            
+            // Setup control listeners
+            setupControls();
+        }
+
+        function draw() {
+            // Background color #F0EEE6
+            background(240, 238, 230);
+            
+            animationTime++;
+            
+            // Use spawn rate control
+            if (animationTime % controls.spawnRate === 0) {
+                spawnRadiator();
+            }
+            
+            // Remove dead radiators
+            radiators = radiators.filter(radiator => !radiator.isDead());
+            
+            // Update and draw all radiators
+            radiators.forEach(radiator => {
+                radiator.update();
+                radiator.draw();
+            });
+        }
+
+        function setupControls() {
+            // Growth Speed
+            const growthSpeedSlider = document.getElementById('growthSpeed');
+            const growthSpeedValue = document.getElementById('growthSpeedValue');
+            growthSpeedSlider.addEventListener('input', (e) => {
+                controls.growthSpeed = parseFloat(e.target.value);
+                growthSpeedValue.textContent = controls.growthSpeed.toFixed(1) + 'x';
+            });
+
+            // Spawn Rate
+            const spawnRateSlider = document.getElementById('spawnRate');
+            const spawnRateValue = document.getElementById('spawnRateValue');
+            spawnRateSlider.addEventListener('input', (e) => {
+                controls.spawnRate = parseInt(e.target.value);
+                spawnRateValue.textContent = controls.spawnRate + ' frames';
+            });
+
+            // Density Variation
+            const densityVariationSlider = document.getElementById('densityVariation');
+            const densityVariationValue = document.getElementById('densityVariationValue');
+            densityVariationSlider.addEventListener('input', (e) => {
+                controls.densityVariation = parseFloat(e.target.value);
+                densityVariationValue.textContent = controls.densityVariation.toFixed(1) + 'x';
+            });
+
+            // Size Variation
+            const sizeVariationSlider = document.getElementById('sizeVariation');
+            const sizeVariationValue = document.getElementById('sizeVariationValue');
+            sizeVariationSlider.addEventListener('input', (e) => {
+                controls.sizeVariation = parseFloat(e.target.value);
+                sizeVariationValue.textContent = controls.sizeVariation.toFixed(1) + 'x';
+            });
+
+            // Irregularity
+            const irregularitySlider = document.getElementById('irregularity');
+            const irregularityValue = document.getElementById('irregularityValue');
+            irregularitySlider.addEventListener('input', (e) => {
+                controls.irregularity = parseFloat(e.target.value);
+                irregularityValue.textContent = controls.irregularity.toFixed(2);
+            });
+
+            // Cluster Tendency
+            const clusterTendencySlider = document.getElementById('clusterTendency');
+            const clusterTendencyValue = document.getElementById('clusterTendencyValue');
+            clusterTendencySlider.addEventListener('input', (e) => {
+                controls.clusterTendency = parseFloat(e.target.value);
+                clusterTendencyValue.textContent = controls.clusterTendency.toFixed(2);
+            });
+
+            // Center Bias
+            const centerBiasSlider = document.getElementById('centerBias');
+            const centerBiasValue = document.getElementById('centerBiasValue');
+            centerBiasSlider.addEventListener('input', (e) => {
+                controls.centerBias = parseFloat(e.target.value);
+                centerBiasValue.textContent = controls.centerBias.toFixed(2);
+            });
+
+            // Opacity
+            const opacitySlider = document.getElementById('opacity');
+            const opacityValue = document.getElementById('opacityValue');
+            opacitySlider.addEventListener('input', (e) => {
+                controls.opacity = parseFloat(e.target.value);
+                opacityValue.textContent = controls.opacity.toFixed(2);
+            });
+
+            // Lifespan
+            const lifespanSlider = document.getElementById('lifespan');
+            const lifespanValue = document.getElementById('lifespanValue');
+            lifespanSlider.addEventListener('input', (e) => {
+                controls.lifespan = parseFloat(e.target.value);
+                lifespanValue.textContent = controls.lifespan.toFixed(1) + 'x';
+            });
+
+            // Max Radiators
+            const maxRadiatorsSlider = document.getElementById('maxRadiators');
+            const maxRadiatorsValue = document.getElementById('maxRadiatorsValue');
+            maxRadiatorsSlider.addEventListener('input', (e) => {
+                controls.maxRadiators = parseInt(e.target.value);
+                maxRadiatorsValue.textContent = controls.maxRadiators;
+            });
+        }
+
+        function resetControls() {
+            // Reset all controls to default values
+            controls = {
+                growthSpeed: 1.0,
+                spawnRate: 45,
+                densityVariation: 1.0,
+                sizeVariation: 1.0,
+                irregularity: 0.2,
+                clusterTendency: 0.75,
+                centerBias: 0.5,
+                opacity: 0.5,
+                lifespan: 1.0,
+                maxRadiators: 60
+            };
+
+            // Update slider values
+            document.getElementById('growthSpeed').value = 1.0;
+            document.getElementById('growthSpeedValue').textContent = '1.0x';
+            
+            document.getElementById('spawnRate').value = 45;
+            document.getElementById('spawnRateValue').textContent = '45 frames';
+            
+            document.getElementById('densityVariation').value = 1.0;
+            document.getElementById('densityVariationValue').textContent = '1.0x';
+            
+            document.getElementById('sizeVariation').value = 1.0;
+            document.getElementById('sizeVariationValue').textContent = '1.0x';
+            
+            document.getElementById('irregularity').value = 0.2;
+            document.getElementById('irregularityValue').textContent = '0.20';
+            
+            document.getElementById('clusterTendency').value = 0.75;
+            document.getElementById('clusterTendencyValue').textContent = '0.75';
+            
+            document.getElementById('centerBias').value = 0.5;
+            document.getElementById('centerBiasValue').textContent = '0.50';
+            
+            document.getElementById('opacity').value = 0.5;
+            document.getElementById('opacityValue').textContent = '0.50';
+            
+            document.getElementById('lifespan').value = 1.0;
+            document.getElementById('lifespanValue').textContent = '1.0x';
+            
+            document.getElementById('maxRadiators').value = 60;
+            document.getElementById('maxRadiatorsValue').textContent = '60';
+        }
+
+        function clearCanvas() {
+            radiators = [];
+            animationTime = 0;
+        }
+    </script>
+</body>
+</html>

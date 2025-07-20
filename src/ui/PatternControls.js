@@ -53,7 +53,10 @@ export class PatternControls {
             { type: PATTERN_TYPES.MANDALA, label: 'Mandala', emoji: '🔮' },
             { type: PATTERN_TYPES.VECTOR_FIELD, label: 'Vector Field', emoji: '🌀' },
             { type: PATTERN_TYPES.SHELL_RIDGE, label: 'Shell Ridge', emoji: '🐚' },
-            { type: PATTERN_TYPES.CONTOUR_INTERFERENCE, label: 'Contour Interference', emoji: '🎯' }
+            { type: PATTERN_TYPES.CONTOUR_INTERFERENCE, label: 'Contour Interference', emoji: '🎯' },
+            { type: PATTERN_TYPES.RADIAL_GROWTH, label: 'Radial Growth', emoji: '🍄' },
+            { type: PATTERN_TYPES.RISO_PRINT, label: 'RISO Print', emoji: '🖨️' },
+            { type: PATTERN_TYPES.FLAME, label: 'Flame', emoji: '🔥' }
         ];
         
         patterns.forEach(pattern => {
@@ -83,6 +86,7 @@ export class PatternControls {
     createParameterControls() {
         const controlsContainer = document.createElement('div');
         controlsContainer.className = 'parameter-controls';
+
         
         // Define all possible controls
         const controlDefinitions = [
@@ -99,10 +103,10 @@ export class PatternControls {
                 key: 'speed',
                 label: 'Animation Speed',
                 type: 'range',
-                min: 0.001,
-                max: 0.1,
-                step: 0.001,
-                patterns: [PATTERN_TYPES.INTERFERENCE, PATTERN_TYPES.GENTLE, PATTERN_TYPES.MANDALA, PATTERN_TYPES.VECTOR_FIELD, PATTERN_TYPES.SHELL_RIDGE]
+                min: 0.5,
+                max: 3,
+                step: 0.5,
+                patterns: [PATTERN_TYPES.INTERFERENCE, PATTERN_TYPES.GENTLE, PATTERN_TYPES.MANDALA, PATTERN_TYPES.VECTOR_FIELD, PATTERN_TYPES.SHELL_RIDGE, PATTERN_TYPES.CONTOUR_INTERFERENCE]
             },
             {
                 key: 'threshold',
@@ -199,18 +203,45 @@ export class PatternControls {
                 key: 'mandalaSpeed',
                 label: 'Rotation Speed',
                 type: 'range',
-                min: 0.1,
-                max: 5.0,
+                min: 1.0,
+                max: 10.0,
+                step: 0.5,
+                patterns: [PATTERN_TYPES.MANDALA]
+            },
+            {
+                key: 'rotationSpeed',
+                label: 'Galaxy Rotation',
+                type: 'range',
+                min: -2.0,
+                max: 2.0,
                 step: 0.1,
+                patterns: [PATTERN_TYPES.MANDALA]
+            },
+            {
+                key: 'spiralArmFactor',
+                label: 'Spiral Arms',
+                type: 'range',
+                min: -2.0,
+                max: 2.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.MANDALA]
+            },
+            {
+                key: 'layerGrowthFactor',
+                label: 'Layer Spacing',
+                type: 'range',
+                min: 0.2,
+                max: 1.5,
+                step: 0.05,
                 patterns: [PATTERN_TYPES.MANDALA]
             },
             {
                 key: 'tileSize',
                 label: 'Tile Size',
                 type: 'range',
-                min: 20,
-                max: 200,
-                step: 5,
+                min: 50,
+                max: 600,
+                step: 30,
                 patterns: [PATTERN_TYPES.VECTOR_FIELD]
             },
             {
@@ -220,6 +251,92 @@ export class PatternControls {
                 min: 0,
                 max: 50,
                 step: 1,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'vectorFieldStrength',
+                label: 'Field Strength',
+                type: 'range',
+                min: 0.1,
+                max: 3.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'noiseScale',
+                label: 'Noise Scale',
+                type: 'range',
+                min: 0.005,
+                max: 0.05,
+                step: 0.005,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'flowSpeed',
+                label: 'Flow Speed',
+                type: 'range',
+                min: 0.1,
+                max: 2.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'lineLifespan',
+                label: 'Line Lifespan',
+                type: 'range',
+                min: 200,
+                max: 1500,
+                step: 50,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'spawnRadius',
+                label: 'Spawn Radius',
+                type: 'range',
+                min: 30,
+                max: 300,
+                step: 10,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'vectorFieldType',
+                label: 'Field Type',
+                type: 'select',
+                options: ['radial', 'turbulent', 'spiral', 'grid'],
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'colorBlending',
+                label: 'Color Blending',
+                type: 'select',
+                options: ['tile', 'velocity', 'age', 'position'],
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'lineOpacity',
+                label: 'Line Opacity',
+                type: 'range',
+                min: 0.1,
+                max: 1.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'lineThickness',
+                label: 'Line Thickness',
+                type: 'range',
+                min: 0.5,
+                max: 10.0,
+                step: 0.5,
+                patterns: [PATTERN_TYPES.VECTOR_FIELD]
+            },
+            {
+                key: 'numLines',
+                label: 'Line Count',
+                type: 'range',
+                min: 50,
+                max: 800,
+                step: 50,
                 patterns: [PATTERN_TYPES.VECTOR_FIELD]
             },
             {
@@ -244,8 +361,8 @@ export class PatternControls {
                 key: 'resolution',
                 label: 'Grid Resolution',
                 type: 'range',
-                min: 1,
-                max: 10,
+                min: 2,
+                max: 20,
                 step: 0.5,
                 patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
             },
@@ -254,7 +371,7 @@ export class PatternControls {
                 label: 'Wave Rings',
                 type: 'range',
                 min: 1,
-                max: 5,
+                max: 15,
                 step: 1,
                 patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
             },
@@ -275,6 +392,387 @@ export class PatternControls {
                 max: 2.0,
                 step: 0.1,
                 patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'animationSpeed',
+                label: 'Wave Speed',
+                type: 'range',
+                min: 0.0005,
+                max: 0.005,
+                step: 0.0001,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'wavelengthVariation',
+                label: 'Wavelength Variation',
+                type: 'range',
+                min: 0,
+                max: 0.5,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'amplitudeDecay',
+                label: 'Amplitude Decay',
+                type: 'range',
+                min: 0.1,
+                max: 0.5,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'phaseShift',
+                label: 'Phase Shift',
+                type: 'range',
+                min: 0,
+                max: 6.28,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'dampingFactor',
+                label: 'Wave Damping',
+                type: 'range',
+                min: 0.001,
+                max: 0.01,
+                step: 0.0005,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'contourThickness',
+                label: 'Contour Thickness',
+                type: 'range',
+                min: 0.5,
+                max: 2.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'maxDistance',
+                label: 'Wave Range',
+                type: 'range',
+                min: 200,
+                max: 800,
+                step: 50,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'nonlinearity',
+                label: 'Wave Nonlinearity',
+                type: 'range',
+                min: 0,
+                max: 0.3,
+                step: 0.01,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'contourLevels',
+                label: 'Contour Levels',
+                type: 'range',
+                min: 3,
+                max: 9,
+                step: 1,
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'fillRegions',
+                label: 'Fill Regions',
+                type: 'checkbox',
+                patterns: [PATTERN_TYPES.CONTOUR_INTERFERENCE]
+            },
+            {
+                key: 'risoComplexity',
+                label: 'RISO Complexity',
+                type: 'range',
+                min: 2,
+                max: 20,
+                step: 1,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'risoSpeed',
+                label: 'Animation Speed',
+                type: 'range',
+                min: 0.1,
+                max: 2.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'halftoneSize',
+                label: 'Halftone Size',
+                type: 'range',
+                min: 6,
+                max: 30,
+                step: 2,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'gridIrregularity',
+                label: 'Grid Irregularity',
+                type: 'range',
+                min: 0,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'shapeVariation',
+                label: 'Shape Variation',
+                type: 'range',
+                min: 0,
+                max: 1.5,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'colorSeparation',
+                label: 'Color Separation',
+                type: 'range',
+                min: 0.1,
+                max: 0.8,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'overprint',
+                label: 'Overprint Effect',
+                type: 'checkbox',
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'dotDensity',
+                label: 'Dot Density',
+                type: 'range',
+                min: 0.2,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'gridRotation',
+                label: 'Grid Rotation',
+                type: 'range',
+                min: -0.5,
+                max: 0.5,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'printMisregistration',
+                label: 'Misregistration',
+                type: 'range',
+                min: 0,
+                max: 5.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'animationSmoothing',
+                label: 'Animation Smoothing',
+                type: 'range',
+                min: 0.1,
+                max: 1.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RISO_PRINT]
+            },
+            {
+                key: 'growthSpeed',
+                label: 'Growth Speed',
+                type: 'range',
+                min: 0.1,
+                max: 3.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'spawnRate',
+                label: 'Spawn Rate',
+                type: 'range',
+                min: 10,
+                max: 120,
+                step: 5,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'densityVariation',
+                label: 'Density Variety',
+                type: 'range',
+                min: 0.1,
+                max: 3.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'sizeVariation',
+                label: 'Size Variety',
+                type: 'range',
+                min: 0.3,
+                max: 2.5,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'irregularity',
+                label: 'Organic Irregularity',
+                type: 'range',
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'clusterTendency',
+                label: 'Clustering',
+                type: 'range',
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'centerBias',
+                label: 'Center Bias',
+                type: 'range',
+                min: 0.1,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'opacity',
+                label: 'Opacity',
+                type: 'range',
+                min: 0.1,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'lifespan',
+                label: 'Lifespan',
+                type: 'range',
+                min: 0.3,
+                max: 3.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'maxColonies',
+                label: 'Max Colonies',
+                type: 'range',
+                min: 10,
+                max: 150,
+                step: 5,
+                patterns: [PATTERN_TYPES.RADIAL_GROWTH]
+            },
+            {
+                key: 'flameHeight',
+                label: 'Flame Height',
+                type: 'range',
+                min: 0.3,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameSpeed',
+                label: 'Animation Speed',
+                type: 'range',
+                min: 0.1,
+                max: 3.0,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameIntensity',
+                label: 'Flame Intensity',
+                type: 'range',
+                min: 0.2,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameComplexity',
+                label: 'Flame Complexity',
+                type: 'range',
+                min: 2,
+                max: 12,
+                step: 1,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameFlicker',
+                label: 'Flickering',
+                type: 'range',
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameTurbulence',
+                label: 'Turbulence',
+                type: 'range',
+                min: 0.0,
+                max: 0.8,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameGradientSteps',
+                label: 'Color Gradients',
+                type: 'range',
+                min: 4,
+                max: 16,
+                step: 1,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameLayerCount',
+                label: 'Flame Layers',
+                type: 'range',
+                min: 1,
+                max: 8,
+                step: 1,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameOpacity',
+                label: 'Opacity',
+                type: 'range',
+                min: 0.3,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameCurl',
+                label: 'Flame Curl',
+                type: 'range',
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameWidth',
+                label: 'Flame Width',
+                type: 'range',
+                min: 0.2,
+                max: 1.0,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
+            },
+            {
+                key: 'flameSpread',
+                label: 'Flame Spread',
+                type: 'range',
+                min: 0.0,
+                max: 0.8,
+                step: 0.05,
+                patterns: [PATTERN_TYPES.FLAME]
             }
         ];
         

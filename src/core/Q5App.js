@@ -5,7 +5,10 @@
  * No external dependencies - pure Canvas 2D
  */
 
-import { SVG_CONFIG, DEFAULT_VALUES, PATTERN_TYPES, THEME_RARITY } from '../constants/patternConfig.js';
+import { SVG_CONFIG, DEFAULT_VALUES, PATTERN_TYPES, THEME_RARITY, THEME_PRESETS } from '../constants/patternConfig.js';
+import { ColorHarmonyValidator } from '../utils/ColorHarmonyValidator.js';
+import { ThemePatternEnhancer } from '../utils/ThemePatternEnhancer.js';
+import { AdvancedColorBlender } from '../utils/AdvancedColorBlender.js';
 import { ControlPanel } from '../ui/ControlPanel.js';
 import { InterferencePattern } from '../patterns/InterferencePattern.js';
 import { PatternRenderer } from '../patterns/PatternRenderer.js';
@@ -16,6 +19,9 @@ import { MandalaPattern } from '../patterns/MandalaPattern.js';
 import { VectorFieldPattern } from '../patterns/VectorFieldPattern.js';
 import { ShellRidgePattern } from '../patterns/ShellRidgePattern.js';
 import { ContourInterferencePattern } from '../patterns/ContourInterferencePattern.js';
+import { RisoPrintPattern } from '../patterns/RisoPrintPattern.js';
+import { RadialGrowthPattern } from '../patterns/RadialGrowthPattern.js';
+import { FlamePattern } from '../patterns/FlamePattern.js';
 
 export class Q5App {
     constructor(config = {}) {
@@ -53,15 +59,70 @@ export class Q5App {
         this.useGradientStrokes = DEFAULT_VALUES.useGradientStrokes;
         this.mandalaComplexity = DEFAULT_VALUES.mandalaComplexity;
         this.mandalaSpeed = DEFAULT_VALUES.mandalaSpeed;
+        this.rotationSpeed = DEFAULT_VALUES.rotationSpeed;
+        this.spiralArmFactor = DEFAULT_VALUES.spiralArmFactor;
+        this.layerGrowthFactor = DEFAULT_VALUES.layerGrowthFactor;
         this.tileSize = DEFAULT_VALUES.tileSize;
         this.tileShiftAmplitude = DEFAULT_VALUES.tileShiftAmplitude;
+        this.vectorFieldStrength = DEFAULT_VALUES.vectorFieldStrength;
+        this.noiseScale = DEFAULT_VALUES.noiseScale;
+        this.flowSpeed = DEFAULT_VALUES.flowSpeed;
+        this.lineLifespan = DEFAULT_VALUES.lineLifespan;
+        this.spawnRadius = DEFAULT_VALUES.spawnRadius;
+        this.vectorFieldType = DEFAULT_VALUES.vectorFieldType;
+        this.colorBlending = DEFAULT_VALUES.colorBlending;
+        this.lineOpacity = DEFAULT_VALUES.lineOpacity;
+        this.lineThickness = DEFAULT_VALUES.lineThickness;
+        this.numLines = DEFAULT_VALUES.numLines;
         this.shellRidgeRings = DEFAULT_VALUES.shellRidgeRings;
         this.shellRidgeDistortion = DEFAULT_VALUES.shellRidgeDistortion;
         this.resolution = DEFAULT_VALUES.resolution;
         this.numRings = DEFAULT_VALUES.numRings;
         this.sourcesPerRing = DEFAULT_VALUES.sourcesPerRing;
         this.lineWidth = DEFAULT_VALUES.lineWidth;
+        this.animationSpeed = DEFAULT_VALUES.animationSpeed;
+        this.wavelengthVariation = DEFAULT_VALUES.wavelengthVariation;
+        this.amplitudeDecay = DEFAULT_VALUES.amplitudeDecay;
+        this.phaseShift = DEFAULT_VALUES.phaseShift;
+        this.dampingFactor = DEFAULT_VALUES.dampingFactor;
+        this.contourThickness = DEFAULT_VALUES.contourThickness;
+        this.maxDistance = DEFAULT_VALUES.maxDistance;
+        this.nonlinearity = DEFAULT_VALUES.nonlinearity;
+        this.contourLevels = DEFAULT_VALUES.contourLevels;
+        this.fillRegions = DEFAULT_VALUES.fillRegions;
+        this.risoComplexity = DEFAULT_VALUES.risoComplexity;
+        this.risoSpeed = DEFAULT_VALUES.risoSpeed;
+        this.halftoneSize = DEFAULT_VALUES.halftoneSize;
+        this.gridIrregularity = DEFAULT_VALUES.gridIrregularity;
+        this.shapeVariation = DEFAULT_VALUES.shapeVariation;
+        this.colorSeparation = DEFAULT_VALUES.colorSeparation;
+        this.overprint = DEFAULT_VALUES.overprint;
+        this.dotDensity = DEFAULT_VALUES.dotDensity;
+        this.gridRotation = DEFAULT_VALUES.gridRotation;
+        this.printMisregistration = DEFAULT_VALUES.printMisregistration;
+        this.growthSpeed = DEFAULT_VALUES.growthSpeed;
+        this.spawnRate = DEFAULT_VALUES.spawnRate;
+        this.densityVariation = DEFAULT_VALUES.densityVariation;
+        this.sizeVariation = DEFAULT_VALUES.sizeVariation;
+        this.irregularity = DEFAULT_VALUES.irregularity;
         
+        this.clusterTendency = DEFAULT_VALUES.clusterTendency;
+        this.centerBias = DEFAULT_VALUES.centerBias;
+        this.opacity = DEFAULT_VALUES.opacity;
+        this.lifespan = DEFAULT_VALUES.lifespan;
+        this.maxColonies = DEFAULT_VALUES.maxColonies;
+        this.flameHeight = DEFAULT_VALUES.flameHeight;
+        this.flameSpeed = DEFAULT_VALUES.flameSpeed;
+        this.flameIntensity = DEFAULT_VALUES.flameIntensity;
+        this.flameComplexity = DEFAULT_VALUES.flameComplexity;
+        this.flameFlicker = DEFAULT_VALUES.flameFlicker;
+        this.flameTurbulence = DEFAULT_VALUES.flameTurbulence;
+        this.flameGradientSteps = DEFAULT_VALUES.flameGradientSteps;
+        this.flameLayerCount = DEFAULT_VALUES.flameLayerCount;
+        this.flameOpacity = DEFAULT_VALUES.flameOpacity;
+        this.flameCurl = DEFAULT_VALUES.flameCurl;
+        this.flameWidth = DEFAULT_VALUES.flameWidth;
+        this.flameSpread = DEFAULT_VALUES.flameSpread;
         // Theme colors (using defaults from config)
         this.colors = {
             primary: this.hexToRgb(DEFAULT_VALUES.colors.color1),
@@ -76,12 +137,34 @@ export class Q5App {
             [PATTERN_TYPES.MANDALA]: new MandalaPattern(),
             [PATTERN_TYPES.VECTOR_FIELD]: new VectorFieldPattern(),
             [PATTERN_TYPES.SHELL_RIDGE]: new ShellRidgePattern(),
-            [PATTERN_TYPES.CONTOUR_INTERFERENCE]: new ContourInterferencePattern()
+            [PATTERN_TYPES.CONTOUR_INTERFERENCE]: new ContourInterferencePattern(),
+            [PATTERN_TYPES.RISO_PRINT]: new RisoPrintPattern(),
+            [PATTERN_TYPES.RADIAL_GROWTH]: new RadialGrowthPattern(),
+            [PATTERN_TYPES.FLAME]: new FlamePattern()
         };
         
         // Theme management
         this.currentTheme = 'dawn';
         this.themeRarity = 'common';
+        
+        // Color harmony validation
+        this.colorValidator = new ColorHarmonyValidator();
+        this.currentValidation = null;
+        
+        // Theme enhancement system
+        this.themeEnhancer = new ThemePatternEnhancer();
+        this.colorBlender = new AdvancedColorBlender();
+        this.lastThemeChange = 0;
+        
+        // Advanced blending parameters
+        this.blendMode = 'normal';
+        this.colorTemperature = 0;
+        this.colorSaturation = 0;
+        this.colorBrightness = 0;
+        this.effectIntensity = 1.0;
+        
+        // Theme enhancement toggle
+        this.themeEnhancementEnabled = true;
         
         console.log('Q5App initialized with config:', this.config);
     }
@@ -102,6 +185,40 @@ export class Q5App {
             }
         }
         return 'dawn'; // fallback
+    }
+    
+    /**
+     * Validate current theme for color harmony and accessibility
+     * @returns {Object} Validation results
+     */
+    validateCurrentTheme() {
+        const colorArray = [
+            this.rgbToHex(this.colors.primary),
+            this.rgbToHex(this.colors.secondary), 
+            this.rgbToHex(this.colors.accent),
+            this.rgbToHex(this.colors.background)
+        ];
+        
+        this.currentValidation = this.colorValidator.validatePalette(colorArray);
+        
+        // Log warnings for accessibility issues
+        if (!this.currentValidation.contrast.wcagAA) {
+            console.warn(`Theme accessibility warning: Contrast ratio ${this.currentValidation.contrast.minimum.toFixed(2)} below WCAG AA standard`);
+        }
+        
+        if (this.currentValidation.accessibility.score < 70) {
+            console.warn(`Theme accessibility warning: Color blindness compatibility score ${this.currentValidation.accessibility.score.toFixed(1)} is low`);
+        }
+        
+        console.log(`Theme validation for ${this.currentTheme}:`, {
+            overall: this.currentValidation.overall.toFixed(1),
+            contrast: this.currentValidation.contrast.minimum.toFixed(2),
+            accessibility: this.currentValidation.accessibility.score.toFixed(1),
+            harmony: this.currentValidation.harmony.score.toFixed(1),
+            balance: this.currentValidation.balance.score.toFixed(1)
+        });
+        
+        return this.currentValidation;
     }
     
     async initialize() {
@@ -148,6 +265,14 @@ export class Q5App {
         }
     }
     
+    /**
+     * Checks if a point (x, y) is inside the scaled and centered SVG mask.
+     * This is used to ensure generative elements appear only within the logo.
+     * @param {number} x - The x-coordinate on the canvas.
+     * @param {number} y - The y-coordinate on the canvas.
+     * @returns {boolean} - True if the point is inside the mask.
+     */
+
     createLogoPath() {
         try {
             // Create Path2D objects for both paths
@@ -179,12 +304,47 @@ export class Q5App {
     }
     
     /**
+     * Helper method to get theme data by name
+     * @param {string} themeName - Theme name
+     * @returns {Object} Theme data object
+     */
+    getThemeData(themeName) {
+        return THEME_PRESETS[themeName] || THEME_PRESETS.dawn;
+    }
+    
+    /**
      * Update parameter from controls
      * @param {string} key - Parameter key
      * @param {any} value - Parameter value
      */
     updateParameter(key, value) {
         console.log(`Updating parameter: ${key} = ${value}`);
+        
+        // Handle theme changes
+        if (key === 'currentTheme') {
+            this.currentTheme = value;
+            this.lastThemeChange = Date.now();
+            
+            // Clear caches to ensure fresh calculations
+            this.themeEnhancer.clearCache();
+            this.colorBlender.clearCache();
+            
+            // Update colors based on new theme
+            const themeData = this.getThemeData(value);
+            if (themeData) {
+                this.colors = {
+                    primary: this.hexToRgb(themeData.color1),
+                    secondary: this.hexToRgb(themeData.color2),
+                    accent: this.hexToRgb(themeData.color3),
+                    background: this.hexToRgb(themeData.color4)
+                };
+                this.themeRarity = themeData.rarity;
+            }
+            
+            // Validate new theme
+            setTimeout(() => this.validateCurrentTheme(), 0);
+            return;
+        }
         
         // Handle color updates
         if (key === 'colors') {
@@ -194,6 +354,30 @@ export class Q5App {
                 accent: this.hexToRgb(value.color3),
                 background: this.hexToRgb(value.color4)
             };
+            // Clear enhancement cache when colors change
+            this.themeEnhancer.clearCache();
+            // Validate theme after color update
+            setTimeout(() => this.validateCurrentTheme(), 0);
+            return;
+        }
+        
+        // Handle advanced blending parameters
+        if (['blendMode', 'colorTemperature', 'colorSaturation', 'colorBrightness', 'effectIntensity'].includes(key)) {
+            this[key] = value;
+            // Clear caches when blending parameters change
+            this.themeEnhancer?.clearCache();
+            this.colorBlender?.clearCache();
+            return;
+        }
+        
+        // Handle theme enhancement toggle
+        if (key === 'themeEnhancementEnabled') {
+            this.themeEnhancementEnabled = value;
+            // Clear caches when enhancement is toggled
+            if (!value) {
+                this.themeEnhancer?.clearCache();
+                this.colorBlender?.clearCache();
+            }
             return;
         }
         
@@ -305,19 +489,74 @@ export class Q5App {
      * @param {number} height - Canvas height
      */
     renderPattern(ctx, time, width, height) {
-        // Get pattern options based on current pattern type
-        const options = this.getPatternOptions();
+        // Apply advanced color adjustments to base colors
+        let adjustedColors = { ...this.colors };
+        
+        if (this.colorTemperature !== 0 || this.colorSaturation !== 0 || this.colorBrightness !== 0) {
+            Object.keys(adjustedColors).forEach(key => {
+                let color = this.rgbToHex(adjustedColors[key]);
+                
+                if (this.colorTemperature !== 0) {
+                    color = this.colorBlender.adjustTemperature(color, this.colorTemperature);
+                }
+                if (this.colorSaturation !== 0) {
+                    color = this.colorBlender.adjustSaturation(color, this.colorSaturation);
+                }
+                if (this.colorBrightness !== 0) {
+                    color = this.colorBlender.adjustBrightness(color, this.colorBrightness);
+                }
+                
+                adjustedColors[key] = this.hexToRgb(color);
+            });
+        }
+        
+        let finalColors, options;
+        
+        if (this.themeEnhancementEnabled) {
+            // Get enhanced theme effects
+            const enhancedTheme = this.themeEnhancer.applyThemeEffects(
+                this.patternType, 
+                this.currentTheme, 
+                adjustedColors,
+                { 
+                    baseOpacity: this.effectIntensity,
+                    blendMode: this.blendMode 
+                }
+            );
+            
+            // Apply theme-specific canvas settings
+            this.applyThemeCanvasEffects(ctx, enhancedTheme);
+            
+            // Get pattern options with theme enhancements
+            options = {
+                ...this.getPatternOptions(),
+                themeEffects: enhancedTheme.special,
+                blendMode: enhancedTheme.blending,
+                opacity: enhancedTheme.opacity
+            };
+            
+            finalColors = enhancedTheme.colors;
+        } else {
+            // Use original colors without enhancement
+            finalColors = adjustedColors;
+            options = this.getPatternOptions();
+        }
         
         // Render based on pattern type
         if (this.patternType === PATTERN_TYPES.INTERFERENCE) {
-            this.renderInterferencePattern(ctx, time);
+            this.renderInterferencePattern(ctx, time, finalColors);
         } else if (this.patternType === PATTERN_TYPES.GENTLE) {
-            this.renderGentlePattern(ctx, time, width, height);
+            this.renderGentlePattern(ctx, time, width, height, finalColors, options);
         } else if (this.patterns[this.patternType]) {
-            this.patterns[this.patternType].render(ctx, time, width, height, this.colors, options);
+            this.patterns[this.patternType].render(ctx, time, width, height, finalColors, options);
         } else {
             // Fallback to interference pattern
-            this.renderInterferencePattern(ctx, time);
+            this.renderInterferencePattern(ctx, time, finalColors);
+        }
+        
+        // Apply post-processing effects only if enhancement is enabled
+        if (this.themeEnhancementEnabled && typeof enhancedTheme !== 'undefined') {
+            this.applyPostProcessingEffects(ctx, enhancedTheme, width, height);
         }
     }
     
@@ -341,18 +580,145 @@ export class Q5App {
             useGradientStrokes: this.useGradientStrokes,
             mandalaComplexity: this.mandalaComplexity,
             mandalaSpeed: this.mandalaSpeed,
+            rotationSpeed: this.rotationSpeed,
+            spiralArmFactor: this.spiralArmFactor,
+            layerGrowthFactor: this.layerGrowthFactor,
             tileSize: this.tileSize,
             tileShiftAmplitude: this.tileShiftAmplitude,
+            vectorFieldStrength: this.vectorFieldStrength,
+            noiseScale: this.noiseScale,
+            flowSpeed: this.flowSpeed,
+            lineLifespan: this.lineLifespan,
+            spawnRadius: this.spawnRadius,
+            vectorFieldType: this.vectorFieldType,
+            colorBlending: this.colorBlending,
+            lineOpacity: this.lineOpacity,
+            lineThickness: this.lineThickness,
+            numLines: this.numLines,
             shellRidgeRings: this.shellRidgeRings,
             shellRidgeDistortion: this.shellRidgeDistortion,
             resolution: this.resolution,
             numRings: this.numRings,
             sourcesPerRing: this.sourcesPerRing,
-            lineWidth: this.lineWidth
+            lineWidth: this.lineWidth,
+            animationSpeed: this.animationSpeed,
+            wavelengthVariation: this.wavelengthVariation,
+            amplitudeDecay: this.amplitudeDecay,
+            phaseShift: this.phaseShift,
+            dampingFactor: this.dampingFactor,
+            contourThickness: this.contourThickness,
+            maxDistance: this.maxDistance,
+            nonlinearity: this.nonlinearity,
+            contourLevels: this.contourLevels,
+            fillRegions: this.fillRegions,
+            risoComplexity: this.risoComplexity,
+            risoSpeed: this.risoSpeed,
+            halftoneSize: this.halftoneSize,
+            gridIrregularity: this.gridIrregularity,
+            shapeVariation: this.shapeVariation,
+            colorSeparation: this.colorSeparation,
+            overprint: this.overprint,
+            dotDensity: this.dotDensity,
+            gridRotation: this.gridRotation,
+            printMisregistration: this.printMisregistration,
+            numSites: this.numSites,
+            siteSpeed: this.siteSpeed,
+            showBorders: this.showBorders,
+            borderWidth: this.borderWidth,
+            showSites: this.showSites,
+            growthSpeed: this.growthSpeed,
+            spawnRate: this.spawnRate,
+            densityVariation: this.densityVariation,
+            sizeVariation: this.sizeVariation,
+            irregularity: this.irregularity,
+            clusterTendency: this.clusterTendency,
+            centerBias: this.centerBias,
+            opacity: this.opacity,
+            lifespan: this.lifespan,
+            maxColonies: this.maxColonies,
+            flameHeight: this.flameHeight,
+            flameSpeed: this.flameSpeed,
+            flameIntensity: this.flameIntensity,
+            flameComplexity: this.flameComplexity,
+            flameFlicker: this.flameFlicker,
+            flameTurbulence: this.flameTurbulence,
+            flameGradientSteps: this.flameGradientSteps,
+            flameLayerCount: this.flameLayerCount,
+            flameOpacity: this.flameOpacity,
+            flameCurl: this.flameCurl,
+            flameWidth: this.flameWidth,
+            flameSpread: this.flameSpread
         };
     }
     
-    renderInterferencePattern(ctx, time) {
+    /**
+     * Apply theme-specific canvas effects
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {Object} enhancedTheme - Enhanced theme object
+     */
+    applyThemeCanvasEffects(ctx, enhancedTheme) {
+        // Reset canvas effects
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+        ctx.filter = 'none';
+        
+        // Get canvas effects from theme enhancer
+        const effects = this.themeEnhancer.getCanvasEffects(this.currentTheme, enhancedTheme.special);
+        
+        // Apply effects
+        if (effects.shadowBlur > 0) {
+            ctx.shadowBlur = effects.shadowBlur;
+            ctx.shadowColor = effects.shadowColor;
+        }
+        
+        if (effects.filter !== 'none') {
+            ctx.filter = effects.filter;
+        }
+        
+        // Set blend mode
+        if (enhancedTheme.blending && enhancedTheme.blending !== 'normal') {
+            ctx.globalCompositeOperation = this.mapBlendMode(enhancedTheme.blending);
+        }
+    }
+    
+    /**
+     * Map blend mode names to canvas composite operations
+     * @param {string} blendMode - Blend mode name
+     * @returns {string} Canvas composite operation
+     */
+    mapBlendMode(blendMode) {
+        const blendModeMap = {
+            'multiply': 'multiply',
+            'screen': 'screen', 
+            'overlay': 'overlay',
+            'soft-light': 'soft-light',
+            'hard-light': 'hard-light',
+            'color-dodge': 'color-dodge',
+            'color-burn': 'color-burn',
+            'luminosity': 'luminosity'
+        };
+        return blendModeMap[blendMode] || 'source-over';
+    }
+    
+    /**
+     * Apply post-processing effects
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {Object} enhancedTheme - Enhanced theme object
+     * @param {number} width - Canvas width
+     * @param {number} height - Canvas height
+     */
+    applyPostProcessingEffects(ctx, enhancedTheme, width, height) {
+        this.themeEnhancer.applyPostProcessingEffects(
+            ctx, 
+            this.currentTheme, 
+            enhancedTheme.special, 
+            width, 
+            height
+        );
+    }
+    
+    renderInterferencePattern(ctx, time, colors) {
         const width = ctx.canvas.width;
         const height = ctx.canvas.height;
         
@@ -360,11 +726,12 @@ export class Q5App {
         const imageData = ctx.createImageData(width, height);
         const data = imageData.data;
         
-        // Get current theme colors
-        const color1 = this.colors.primary;
-        const color2 = this.colors.secondary;
-        const color3 = this.colors.accent;
-        const color4 = this.colors.background;
+        // Get enhanced theme colors (fallback to this.colors if not provided)
+        const useColors = colors || this.colors;
+        const color1 = useColors.primary;
+        const color2 = useColors.secondary;
+        const color3 = useColors.accent;
+        const color4 = useColors.background;
         
         // Interference pattern parameters (dynamic)
         const sources = [];
@@ -448,7 +815,7 @@ export class Q5App {
         ctx.putImageData(imageData, 0, 0);
     }
     
-    renderGentlePattern(ctx, time, width, height) {
+    renderGentlePattern(ctx, time, width, height, colors, options) {
         const { 
             wavelength, 
             lineDensity, 
@@ -460,8 +827,11 @@ export class Q5App {
             useGradientStrokes 
         } = this;
         
+        // Use enhanced colors (fallback to this.colors if not provided)
+        const useColors = colors || this.colors;
+        
         // Clear canvas with background color
-        ctx.fillStyle = `rgb(${this.colors.background[0]}, ${this.colors.background[1]}, ${this.colors.background[2]})`;
+        ctx.fillStyle = `rgb(${useColors.background[0]}, ${useColors.background[1]}, ${useColors.background[2]})`;
         ctx.fillRect(0, 0, width, height);
         
         const stepSize = Math.max(4, Math.ceil(width / 300));

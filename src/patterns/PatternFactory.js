@@ -10,6 +10,8 @@ import { GentlePattern } from './GentlePattern.js';
 import { MandalaPattern } from './MandalaPattern.js';
 import { VectorFieldPattern } from './VectorFieldPattern.js';
 import { ShellRidgePattern } from './ShellRidgePattern.js';
+import { RadialGrowthPattern } from './RadialGrowthPattern.js';
+import { FlamePattern } from './FlamePattern.js';
 import { PATTERN_TYPES } from '../constants/patternConfig.js';
 
 export class PatternFactory {
@@ -295,7 +297,7 @@ export class PatternFactory {
         });
         
         // Register ContourInterference pattern
-        this.registerPattern('ContourInterference', ContourInterferencePattern, {
+        this.registerPattern('PATTERN_TYPES.CONTOUR_INTERFERENCE', ContourInterferencePattern, {
             description: 'Wave interference visualization using marching squares algorithm',
             category: 'waves',
             complexity: 'high',
@@ -357,6 +359,28 @@ export class PatternFactory {
             defaultParams: {
                 shellRidgeRings: 25,
                 shellRidgeDistortion: 8
+            }
+        });
+
+        // Register Flame pattern
+        this.registerPattern(PATTERN_TYPES.FLAME, FlamePattern, {
+            description: 'Flowing organic flames with layered colors and turbulence',
+            category: 'organic',
+            complexity: 'high',
+            webgpuOptimized: false,
+            defaultParams: {
+                flameHeight: 0.8,
+                flameSpeed: 1.0,
+                flameIntensity: 0.7,
+                flameComplexity: 6,
+                flameFlicker: 0.5,
+                flameTurbulence: 0.3,
+                flameGradientSteps: 8,
+                flameLayerCount: 4,
+                flameOpacity: 0.8,
+                flameCurl: 0.6,
+                flameWidth: 0.5,
+                flameSpread: 0.4
             }
         });
 

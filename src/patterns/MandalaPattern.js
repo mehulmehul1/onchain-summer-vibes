@@ -21,7 +21,13 @@ export class MandalaPattern {
      * @param {Object} options - Pattern options
      */
     render(ctx, time, width, height, colors, options = {}) {
-        const { mandalaComplexity = 6, mandalaSpeed = 1.0 } = options;
+        const { 
+            mandalaComplexity = 6, 
+            mandalaSpeed = 1.0,
+            rotationSpeed = 0.0, // New: Overall rotation speed
+            spiralArmFactor = 0.0, // New: How much layers spiral
+            layerGrowthFactor = 0.7 // New: Controls spacing between layers
+        } = options;
         
         // Clear canvas with background color
         ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
@@ -42,11 +48,12 @@ export class MandalaPattern {
         
         // Draw concentric layers
         for (let layer = 0; layer < mandalaComplexity; layer++) {
-            const radius = baseRadius * (1 + layer * 0.7);
+            const radius = baseRadius * (1 + layer * layerGrowthFactor);
             const points = 6 + layer * 2;
             
             for (let i = 0; i < points; i++) {
-                const angle = (i / points) * Math.PI * 2;
+                // Add rotation and spiral offsets to the angle
+                const angle = (i / points) * Math.PI * 2 + (animatedTime * 0.005 * rotationSpeed) + (layer * spiralArmFactor * 0.1);
                 const breathingFactor = 0.3 * Math.sin(animatedTime * 0.025 + layer * 0.5 + i * 0.2);
                 const x = centerX + Math.cos(angle) * (radius + breathingFactor * radius);
                 const y = centerY + Math.sin(angle) * (radius + breathingFactor * radius);
@@ -98,7 +105,8 @@ export class MandalaPattern {
         // Draw connecting lines
         const numConnections = Math.floor(mandalaComplexity * 8);
         for (let i = 0; i < numConnections; i++) {
-            const angle = (i / numConnections) * Math.PI * 2;
+            // Add rotation to connecting lines
+            const angle = (i / numConnections) * Math.PI * 2 + (animatedTime * 0.002 * rotationSpeed);
             const radius1 = baseRadius * 0.5;
             const radius2 = baseRadius * (2 + mandalaComplexity * 0.5);
             
@@ -124,7 +132,8 @@ export class MandalaPattern {
             const ringPoints = ring * 8;
             
             for (let i = 0; i < ringPoints; i++) {
-                const angle = (i / ringPoints) * Math.PI * 2;
+                // Add rotation to inner dot rings
+                const angle = (i / ringPoints) * Math.PI * 2 + (animatedTime * 0.008 * rotationSpeed);
                 const breathingOffset = Math.sin(animatedTime * 0.03 + ring * 0.8 + i * 0.1) * (ringRadius * 0.1);
                 const x = centerX + Math.cos(angle) * (ringRadius + breathingOffset);
                 const y = centerY + Math.sin(angle) * (ringRadius + breathingOffset);
@@ -147,7 +156,13 @@ export class MandalaPattern {
      * @returns {number} - Complexity score (1-100)
      */
     calculateComplexity(params = {}) {
-        const { mandalaComplexity = 6, mandalaSpeed = 1.0 } = params;
+        const { 
+            mandalaComplexity = 6, 
+            mandalaSpeed = 1.0,
+            rotationSpeed = 0.0,
+            spiralArmFactor = 0.0,
+            layerGrowthFactor = 0.7
+        } = params;
         
         // Base complexity starts at 25
         let complexity = 25;
@@ -160,8 +175,11 @@ export class MandalaPattern {
         const speedFactor = Math.min(mandalaSpeed / 3, 1); // Normalize to 0-1
         complexity += speedFactor * 15;
         
-        // Additional complexity from geometric shapes and breathing animations
-        complexity += 10; // Fixed bonus for geometric complexity
+        // Additional complexity from new parameters
+        complexity += Math.abs(rotationSpeed) * 2; // Rotation adds some complexity
+        complexity += Math.abs(spiralArmFactor) * 3; // Spirals are more complex
+        complexity += (1 - Math.min(layerGrowthFactor, 1)) * 5; // Denser layers are more complex
+        complexity += 5; // Fixed bonus for geometric complexity
         
         return Math.min(Math.max(Math.round(complexity), 1), 100);
     }

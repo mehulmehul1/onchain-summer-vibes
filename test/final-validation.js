@@ -10,7 +10,7 @@ import { VectorFieldPattern } from '../src/patterns/VectorFieldPattern.js';
 import { ShellRidgePattern } from '../src/patterns/ShellRidgePattern.js';
 import { PatternFactory } from '../src/patterns/PatternFactory.js';
 import { TokenMetadata } from '../src/core/TokenMetadata.js';
-import { Q5App } from '../src/core/Q5App-minimal.js';
+import { Q5App } from '../src/core/Q5App.js';
 
 async function validatePhase2Tasks() {
     console.log('=== Phase 2 Task Validation ===\n');

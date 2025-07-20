@@ -8,7 +8,7 @@
 import { VECTOR_FIELD_CONFIG } from '../constants/patternConfig.js';
 
 export class Line {
-    constructor(width, height, colors, tileSize) {
+    constructor(width, height, colors, tileSize, options = {}) {
         this.x = 0;
         this.y = 0;
         this.points = [];
@@ -18,45 +18,94 @@ export class Line {
         this.width = 0;
         this.baseColor = { r: 0, g: 0, b: 0 };
         
-        this.reset(width, height, colors, tileSize);
+        this.reset(width, height, colors, tileSize, options);
     }
     
-    reset(width, height, colors, tileSize) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 50 + Math.random() * 150;
-        this.x = width / 2 + Math.cos(angle) * distance;
-        this.y = height / 2 + Math.sin(angle) * distance;
+    reset(width, height, colors, tileSize, options = {}) {
+        // More distributed spawning - random positions across canvas
+        const spawnMode = Math.random();
+        if (spawnMode < 0.3) {
+            // Edge spawning
+            const edge = Math.floor(Math.random() * 4);
+            switch(edge) {
+                case 0: this.x = Math.random() * width; this.y = 0; break;           // Top
+                case 1: this.x = width; this.y = Math.random() * height; break;     // Right
+                case 2: this.x = Math.random() * width; this.y = height; break;     // Bottom
+                case 3: this.x = 0; this.y = Math.random() * height; break;        // Left
+            }
+        } else if (spawnMode < 0.6) {
+            // Random positions across canvas
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+        } else {
+            // Original circular spawning (but more varied)
+            const angle = Math.random() * Math.PI * 2;
+            const spawnRadius = (options.spawnRadius || 100) + Math.random() * 200;
+            this.x = width / 2 + Math.cos(angle) * spawnRadius;
+            this.y = height / 2 + Math.sin(angle) * spawnRadius;
+        }
         this.points = [];
         this.age = 0;
-        this.lifespan = 400 + Math.random() * 600;
+        this.lifespan = (options.lineLifespan || 400) + Math.random() * 600;
         this.opacity = 0;
-        this.width = 0.2 + Math.random() * 0.8;
+        this.width = 0.2 + Math.random() * (options.lineThickness || 0.8);
         
-        const tileX = Math.floor(this.x / tileSize);
-        const tileY = Math.floor(this.y / tileSize);
-        const colorT = (tileX + tileY) / 20;
+        // Enhanced 4-color system based on colorBlending mode
+        this.baseColor = this.calculateColor(colors, tileSize, options.colorBlending || 'tile');
+    }
+    
+    calculateColor(colors, tileSize, colorBlending) {
+        let colorIndex = 0;
         
-        this.baseColor = {
-            r: Math.round(colors.primary[0] + (colors.secondary[0] - colors.primary[0]) * colorT),
-            g: Math.round(colors.primary[1] + (colors.secondary[1] - colors.primary[1]) * colorT),
-            b: Math.round(colors.primary[2] + (colors.secondary[2] - colors.primary[2]) * colorT)
+        switch (colorBlending) {
+            case 'tile':
+                // Tile-based coloring using all 4 colors
+                const tileX = Math.floor(this.x / tileSize);
+                const tileY = Math.floor(this.y / tileSize);
+                colorIndex = (tileX + tileY) % 4;
+                break;
+            case 'position':
+                // Position-based coloring (quadrants)
+                const centerX = this.x > window.innerWidth / 2;
+                const centerY = this.y > window.innerHeight / 2;
+                colorIndex = centerX ? (centerY ? 3 : 1) : (centerY ? 2 : 0);
+                break;
+            case 'age':
+                // Age-based coloring (will be updated in update method)
+                colorIndex = Math.floor(Math.random() * 4);
+                break;
+            case 'velocity':
+                // Random for initial spawn, will be updated based on velocity
+                colorIndex = Math.floor(Math.random() * 4);
+                break;
+        }
+        
+        const colorArrays = [colors.primary, colors.secondary, colors.accent, colors.background];
+        const selectedColor = colorArrays[colorIndex];
+        
+        return {
+            r: selectedColor[0],
+            g: selectedColor[1],
+            b: selectedColor[2]
         };
     }
     
-    update(time, vectorField, width, height, colors, tileSize) {
+    update(time, vectorField, width, height, colors, tileSize, options = {}) {
         this.age += 1;
         if (this.age >= this.lifespan) {
-            this.reset(width, height, colors, tileSize);
+            this.reset(width, height, colors, tileSize, options);
             return;
         }
         
         const progress = this.age / this.lifespan;
+        const lineOpacity = options.lineOpacity || VECTOR_FIELD_CONFIG.lineAlpha;
+        
         if (progress < 0.1) {
-            this.opacity = progress / 0.1 * VECTOR_FIELD_CONFIG.lineAlpha;
+            this.opacity = progress / 0.1 * lineOpacity;
         } else if (progress > 0.9) {
-            this.opacity = (1 - (progress - 0.9) / 0.1) * VECTOR_FIELD_CONFIG.lineAlpha;
+            this.opacity = (1 - (progress - 0.9) / 0.1) * lineOpacity;
         } else {
-            this.opacity = VECTOR_FIELD_CONFIG.lineAlpha;
+            this.opacity = lineOpacity;
         }
         
         const vector = vectorField(this.x, this.y, time);
@@ -66,12 +115,42 @@ export class Line {
             this.points.shift();
         }
         
-        this.x += vector.x * 0.5;
-        this.y += vector.y * 0.5;
+        const flowSpeed = options.flowSpeed || 0.5;
+        this.x += vector.x * flowSpeed;
+        this.y += vector.y * flowSpeed;
         
         const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height || magnitude < 0.01) {
-            this.reset(width, height, colors, tileSize);
+        
+        // Update color based on colorBlending mode
+        const colorBlending = options.colorBlending || 'tile';
+        if (colorBlending === 'velocity') {
+            // Color based on velocity magnitude (0-4 speed mapped to 4 colors)
+            const colorIndex = Math.min(3, Math.floor(magnitude * 4));
+            const colorArrays = [colors.primary, colors.secondary, colors.accent, colors.background];
+            const selectedColor = colorArrays[colorIndex];
+            this.baseColor = {
+                r: selectedColor[0],
+                g: selectedColor[1],
+                b: selectedColor[2]
+            };
+        } else if (colorBlending === 'age') {
+            // Color based on age progression (4 life stages)
+            const colorIndex = Math.min(3, Math.floor(progress * 4));
+            const colorArrays = [colors.primary, colors.secondary, colors.accent, colors.background];
+            const selectedColor = colorArrays[colorIndex];
+            this.baseColor = {
+                r: selectedColor[0],
+                g: selectedColor[1],
+                b: selectedColor[2]
+            };
+        }
+        
+        // More lenient boundary conditions - allow some overflow
+        const margin = 50;
+        if (this.x < -margin || this.x > width + margin || 
+            this.y < -margin || this.y > height + margin || 
+            magnitude < 0.005) {
+            this.reset(width, height, colors, tileSize, options);
         }
     }
     
@@ -120,11 +199,13 @@ export class VectorFieldPattern {
     /**
      * Initialize lines if not already initialized
      */
-    initializeLines(width, height, colors, tileSize) {
-        if (!this.initialized) {
+    initializeLines(width, height, colors, tileSize, options = {}) {
+        const numLines = options.numLines || VECTOR_FIELD_CONFIG.numLines;
+        
+        if (!this.initialized || this.lines.length !== numLines) {
             this.lines = [];
-            for (let i = 0; i < VECTOR_FIELD_CONFIG.numLines; i++) {
-                this.lines.push(new Line(width, height, colors, tileSize));
+            for (let i = 0; i < numLines; i++) {
+                this.lines.push(new Line(width, height, colors, tileSize, options));
             }
             this.initialized = true;
         }
@@ -140,37 +221,118 @@ export class VectorFieldPattern {
      * @param {Object} options - Pattern options
      */
     render(ctx, time, width, height, colors, options = {}) {
-        const { tileSize = 55, tileShiftAmplitude = 10 } = options;
-        const noiseTimeScale = 0.000125;
+        const { 
+            tileSize = 55, 
+            tileShiftAmplitude = 10,
+            vectorFieldStrength = 1.0,
+            noiseScale = 0.01,
+            vectorFieldType = 'radial'
+        } = options;
         
-        // Clear canvas with background color
-        ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
-        ctx.fillRect(0, 0, width, height);
+        const noiseTimeScale = noiseScale * 0.0125;
+        
+        // Enhanced background with subtle gradient using accent and background colors
+        this.drawEnhancedBackground(ctx, width, height, colors, options);
         
         // Initialize lines if needed
-        this.initializeLines(width, height, colors, tileSize);
+        this.initializeLines(width, height, colors, tileSize, options);
         
-        // Define vector field function
-        const vectorField = (x, y, t) => {
-            const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
-            const adjustedX = x + offsetX;
-            const adjustedY = y + offsetY;
-            const nx = (adjustedX - width / 2) * 0.01;
-            const ny = (adjustedY - height / 2) * 0.01;
-            const n = this.noise(nx, ny, t * noiseTimeScale);
-            const cx = adjustedX - width / 2;
-            const cy = adjustedY - height / 2;
-            const r = Math.sqrt(cx * cx + cy * cy);
-            const mask = Math.max(0, 1 - r / 200);
-            const angle = n * Math.PI * 4 + Math.atan2(cy, cx);
-            return { x: Math.cos(angle) * mask, y: Math.sin(angle) * mask };
-        };
+        // Define vector field function based on field type
+        const vectorField = this.getVectorField(vectorFieldType, tileSize, tileShiftAmplitude, 
+                                               vectorFieldStrength, noiseTimeScale, width, height);
         
         // Update and draw lines
         this.lines.forEach(line => {
-            line.update(time, vectorField, width, height, colors, tileSize);
+            line.update(time, vectorField, width, height, colors, tileSize, options);
             line.draw(ctx);
         });
+    }
+
+    /**
+     * Draw enhanced background using multiple colors
+     */
+    drawEnhancedBackground(ctx, width, height, colors, options) {
+        // Base background
+        ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
+        ctx.fillRect(0, 0, width, height);
+        
+        // Add subtle radial gradient overlay using accent color
+        const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height)/2);
+        gradient.addColorStop(0, `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, 0.05)`);
+        gradient.addColorStop(1, `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, 0.02)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    /**
+     * Get vector field function based on type
+     */
+    getVectorField(type, tileSize, tileShiftAmplitude, strength, noiseTimeScale, width, height) {
+        switch(type) {
+            case 'spiral':
+                return (x, y, t) => {
+                    const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
+                    const cx = x + offsetX - width / 2;
+                    const cy = y + offsetY - height / 2;
+                    const r = Math.sqrt(cx * cx + cy * cy);
+                    const angle = Math.atan2(cy, cx) + r * 0.01 + t * 0.001;
+                    // Remove restrictive mask, add gentle falloff
+                    const falloff = 0.3 + 0.7 / (1 + r * 0.001);
+                    return { 
+                        x: Math.cos(angle) * falloff * strength, 
+                        y: Math.sin(angle) * falloff * strength 
+                    };
+                };
+            
+            case 'turbulent':
+                return (x, y, t) => {
+                    const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
+                    const adjustedX = x + offsetX;
+                    const adjustedY = y + offsetY;
+                    const nx = adjustedX * 0.01;
+                    const ny = adjustedY * 0.01;
+                    const n1 = this.noise(nx, ny, t * noiseTimeScale);
+                    const n2 = this.noise(nx * 2, ny * 2, t * noiseTimeScale * 0.5);
+                    const angle = (n1 + n2 * 0.5) * Math.PI * 4;
+                    return { 
+                        x: Math.cos(angle) * strength, 
+                        y: Math.sin(angle) * strength 
+                    };
+                };
+            
+            case 'grid':
+                return (x, y, t) => {
+                    const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
+                    const gridX = Math.floor((x + offsetX) / 100);
+                    const gridY = Math.floor((y + offsetY) / 100);
+                    const angle = (gridX + gridY + t * 0.001) * Math.PI * 0.5;
+                    return { 
+                        x: Math.cos(angle) * strength, 
+                        y: Math.sin(angle) * strength 
+                    };
+                };
+            
+            default: // 'radial'
+                return (x, y, t) => {
+                    const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
+                    const adjustedX = x + offsetX;
+                    const adjustedY = y + offsetY;
+                    const nx = (adjustedX - width / 2) * 0.01;
+                    const ny = (adjustedY - height / 2) * 0.01;
+                    const n = this.noise(nx, ny, t * noiseTimeScale);
+                    const cx = adjustedX - width / 2;
+                    const cy = adjustedY - height / 2;
+                    const r = Math.sqrt(cx * cx + cy * cy);
+                    // Much gentler falloff, ensure flow everywhere
+                    const falloff = 0.5 + 0.5 / (1 + r * 0.002);
+                    const angle = n * Math.PI * 4 + Math.atan2(cy, cx);
+                    return { 
+                        x: Math.cos(angle) * falloff * strength, 
+                        y: Math.sin(angle) * falloff * strength 
+                    };
+                };
+        }
     }
 
     /**
