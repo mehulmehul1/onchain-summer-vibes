@@ -345,11 +345,23 @@
                         <input type="checkbox" id="pattern-contourinterference" value="contourinterference" checked>
                         <label for="pattern-contourinterference">Contour Waves</label>
                     </div>
+                    <div class="pattern-checkbox">
+                        <input type="checkbox" id="pattern-risoprint" value="risoprint" checked>
+                        <label for="pattern-risoprint">RISO Print</label>
+                    </div>
+                    <div class="pattern-checkbox">
+                        <input type="checkbox" id="pattern-radialgrowth" value="radialgrowth" checked>
+                        <label for="pattern-radialgrowth">Radial Growth</label>
+                    </div>
+                    <div class="pattern-checkbox">
+                        <input type="checkbox" id="pattern-flame" value="flame" checked>
+                        <label for="pattern-flame">Living Flames</label>
+                    </div>
                     <div class="pattern-actions">
                         <button class="pattern-btn" id="selectAllBtn">Select All</button>
                         <button class="pattern-btn" id="deselectAllBtn">Deselect All</button>
                     </div>
-                    <div class="selected-count" id="selectedCount">10 of 10 patterns selected</div>
+                    <div class="selected-count" id="selectedCount">9 of 9 patterns selected</div>
                 </div>
             </div>
         </div>
@@ -394,7 +406,8 @@
         // Pattern filtering state
         let enabledPatterns = new Set([
             'interference', 'gentle', 'mandala', 'vectorfield', 
-            'shellridge', 'contourinterference'
+            'shellridge', 'contourinterference', 
+            'risoprint', 'radialgrowth', 'flame'
         ]);
         
         // Pattern selector functions
@@ -451,9 +464,10 @@
                     'mandala': PATTERN_TYPES.MANDALA,
                     'vectorfield': PATTERN_TYPES.VECTOR_FIELD,
                     'shellridge': PATTERN_TYPES.SHELL_RIDGE,
-                    'contourinterference': PATTERN_TYPES.CONTOUR_INTERFERENCE
-                   
-
+                    'contourinterference': PATTERN_TYPES.CONTOUR_INTERFERENCE,
+                    'risoprint': PATTERN_TYPES.RISO_PRINT,
+                    'radialgrowth': PATTERN_TYPES.RADIAL_GROWTH,
+                    'flame': PATTERN_TYPES.FLAME
                 };
                 
                 // Filter patterns based on enabled checkboxes
