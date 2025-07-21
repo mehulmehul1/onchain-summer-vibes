@@ -1,146 +1,62 @@
 /**
- * InterferencePattern.js - Wave Interference Pattern for q5.js
+ * InterferencePattern.js - Modern Wave Interference Pattern
  * 
- * Converts React interference pattern to q5.js with pixel operations
+ * Updated to use modern Canvas 2D rendering with standard render() signature
+ * Creates wave interference effects with multiple sources
  */
 
-import { PatternRenderer } from './PatternRenderer.js';
-import PatternUtils from './PatternUtils.js';
-
-export class InterferencePattern extends PatternRenderer {
-    constructor(name = 'InterferencePattern') {
-        super(name);
-        
-        // Pattern-specific parameters
-        this.parameters = {
-            ...this.parameters,
-            wavelength: 50,
-            sources: [
-                { x: 200, y: 150 },
-                { x: 600, y: 150 },
-                { x: 400, y: 450 }
-            ],
-            gradientMode: true,
-            threshold: 0.1,
-            noiseAmount: 8,
-            phaseOffset: 0
-        };
-        
-        // Color configuration
-        this.colors = {
-            color1: [255, 100, 100], // Red
-            color2: [100, 255, 100], // Green
-            color3: [100, 100, 255], // Blue
-            color4: [50, 50, 50]     // Background
-        };
-        
-        this.timeOffset = 0;
-        this.animationSpeed = 1.0;
+export class InterferencePattern {
+    constructor() {
+        this.name = 'Interference';
+        this.type = 'interference';
     }
-
+    
     /**
-     * Initialize interference pattern with options
+     * Render interference pattern with multiple wave sources
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {number} time - Animation time
+     * @param {number} width - Canvas width
+     * @param {number} height - Canvas height
+     * @param {Object} colors - Color theme
      * @param {Object} options - Pattern options
      */
-    initialize(options = {}) {
-        super.initialize(options);
+    render(ctx, time, width, height, colors, options = {}) {
+        const {
+            wavelength = 25,
+            speed = 0.018,
+            threshold = 0.12,
+            gradientMode = true,
+            sourceCount = 9,
+            noiseAmount = 8,
+            phaseOffset = 0
+        } = options;
         
-        // Update pattern-specific parameters
-        if (options.wavelength !== undefined) {
-            this.parameters.wavelength = options.wavelength;
-        }
+        // Clear canvas with background
+        ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
+        ctx.fillRect(0, 0, width, height);
         
-        if (options.sources) {
-            this.parameters.sources = options.sources;
-        }
+        // Generate wave sources in circular arrangement
+        const sources = this.generateWaveSources(sourceCount, width, height);
         
-        if (options.colors) {
-            this.colors = { ...this.colors, ...options.colors };
-        }
+        // Create image data for pixel manipulation
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
         
-        if (options.gradientMode !== undefined) {
-            this.parameters.gradientMode = options.gradientMode;
-        }
+        // Calculate wave interference for each pixel (with sampling for performance)
+        const sampleRate = 2; // Sample every 2nd pixel for performance
         
-        if (options.threshold !== undefined) {
-            this.parameters.threshold = options.threshold;
-        }
-        
-        // Initialize wave sources based on canvas size
-        this.initializeWaveSources();
-        
-        console.log(`${this.name} initialized with ${this.parameters.sources.length} wave sources`);
-        return true;
-    }
-
-    /**
-     * Initialize wave sources based on canvas dimensions
-     */
-    initializeWaveSources() {
-        const currentWidth = width || 800;
-        const currentHeight = height || 600;
-        
-        // Default wave sources in a triangular pattern
-        this.parameters.sources = [
-            { x: currentWidth * 0.25, y: currentHeight * 0.25 },
-            { x: currentWidth * 0.75, y: currentHeight * 0.25 },
-            { x: currentWidth * 0.5, y: currentHeight * 0.75 }
-        ];
-    }
-
-    /**
-     * Convert hex color to RGB
-     * @param {string} hex - Hex color string
-     * @returns {Array} - RGB array [r, g, b]
-     */
-    hexToRgb(hex) {
-        if (Array.isArray(hex)) {
-            return hex;
-        }
-        
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? [
-            parseInt(result[1], 16),
-            parseInt(result[2], 16),
-            parseInt(result[3], 16)
-        ] : [128, 128, 128];
-    }
-
-    /**
-     * Render interference pattern
-     * @param {number} time - Current time in seconds
-     */
-    renderPattern(time) {
-        const currentWidth = width || 800;
-        const currentHeight = height || 600;
-        
-        // Update time offset for animation
-        this.timeOffset = time * this.animationSpeed;
-        
-        // Get pattern parameters
-        const { wavelength, sources, gradientMode, threshold, noiseAmount } = this.parameters;
-        
-        // Convert colors to RGB if needed
-        const rgb1 = this.hexToRgb(this.colors.color1);
-        const rgb2 = this.hexToRgb(this.colors.color2);
-        const rgb3 = this.hexToRgb(this.colors.color3);
-        const rgb4 = this.hexToRgb(this.colors.color4);
-        
-        // Render the interference pattern
-        for (let y = 0; y < currentHeight; y++) {
-            for (let x = 0; x < currentWidth; x++) {
-                const index = (y * currentWidth + x) * 4;
-                
-                // Calculate wave interference
+        for (let y = 0; y < height; y += sampleRate) {
+            for (let x = 0; x < width; x += sampleRate) {
+                // Calculate wave interference at this point
                 let amplitude = 0;
                 
                 sources.forEach((source, i) => {
                     const dx = x - source.x;
                     const dy = y - source.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    const phase = i * Math.PI / 4; // Phase offset for each source
+                    const phase = i * Math.PI / 4 + phaseOffset; // Phase offset for each source
                     
-                    amplitude += Math.sin((distance / wavelength - this.timeOffset) * 2 * Math.PI + phase);
+                    amplitude += Math.sin((distance / wavelength - time * speed * 100) * 2 * Math.PI + phase);
                 });
                 
                 // Normalize amplitude
@@ -154,48 +70,80 @@ export class InterferencePattern extends PatternRenderer {
                     
                     if (t < 0.33) {
                         const localT = t / 0.33;
-                        finalColor = this.blendColors(rgb1, rgb2, localT);
+                        finalColor = this.blendColors(colors.background, colors.secondary, localT);
                     } else if (t < 0.66) {
                         const localT = (t - 0.33) / 0.33;
-                        finalColor = this.blendColors(rgb2, rgb3, localT);
+                        finalColor = this.blendColors(colors.secondary, colors.accent, localT);
                     } else {
                         const localT = (t - 0.66) / 0.34;
-                        finalColor = this.blendColors(rgb3, rgb4, localT);
+                        finalColor = this.blendColors(colors.accent, colors.primary, localT);
                     }
                     
                     // Add noise for texture
-                    const noise = (Math.random() - 0.5) * noiseAmount;
-                    finalColor = [
-                        Math.max(0, Math.min(255, finalColor[0] + noise)),
-                        Math.max(0, Math.min(255, finalColor[1] + noise)),
-                        Math.max(0, Math.min(255, finalColor[2] + noise))
-                    ];
+                    if (noiseAmount > 0) {
+                        const noise = (Math.random() - 0.5) * noiseAmount;
+                        finalColor = [
+                            Math.max(0, Math.min(255, finalColor[0] + noise)),
+                            Math.max(0, Math.min(255, finalColor[1] + noise)),
+                            Math.max(0, Math.min(255, finalColor[2] + noise))
+                        ];
+                    }
                     
                 } else {
                     // Line mode - discrete interference lines
                     const isLine = Math.abs(normalized) < threshold;
                     
                     if (isLine) {
-                        finalColor = rgb1; // Interference line color
+                        finalColor = colors.primary; // Interference line color
                     } else {
-                        finalColor = rgb3; // Background color
+                        finalColor = colors.background; // Background color
                     }
                 }
                 
-                // Set pixel color
-                if (pixels && pixels.length > index + 3) {
-                    pixels[index] = finalColor[0];     // R
-                    pixels[index + 1] = finalColor[1]; // G
-                    pixels[index + 2] = finalColor[2]; // B
-                    pixels[index + 3] = 255;           // A
+                // Fill sampled area (2x2 block for performance)
+                for (let sy = 0; sy < sampleRate && y + sy < height; sy++) {
+                    for (let sx = 0; sx < sampleRate && x + sx < width; sx++) {
+                        const index = ((y + sy) * width + (x + sx)) * 4;
+                        if (index < data.length) {
+                            data[index] = finalColor[0];     // R
+                            data[index + 1] = finalColor[1]; // G
+                            data[index + 2] = finalColor[2]; // B
+                            data[index + 3] = 255;           // A
+                        }
+                    }
                 }
             }
         }
         
-        // Update performance metrics
-        this.performance.pixelOperations = currentWidth * currentHeight;
+        // Put image data back to canvas
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Add optional enhancement effects
+        if (gradientMode && options.glowEffect) {
+            this.addGlowEffect(ctx, width, height, colors);
+        }
     }
-
+    
+    /**
+     * Generate wave sources in circular arrangement
+     */
+    generateWaveSources(count, width, height) {
+        const sources = [];
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.3;
+        
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2;
+            sources.push({
+                x: centerX + Math.cos(angle) * radius,
+                y: centerY + Math.sin(angle) * radius
+            });
+        }
+        
+        return sources;
+    }
+    
     /**
      * Blend two colors
      * @param {Array} color1 - First color [r, g, b]
@@ -210,127 +158,47 @@ export class InterferencePattern extends PatternRenderer {
             Math.floor(color1[2] * (1 - t) + color2[2] * t)
         ];
     }
-
+    
     /**
-     * Add wave source
-     * @param {number} x - X position
-     * @param {number} y - Y position
+     * Add subtle glow effect for enhanced visual appeal
      */
-    addWaveSource(x, y) {
-        this.parameters.sources.push({ x, y });
-        console.log(`Wave source added at (${x}, ${y})`);
-    }
-
-    /**
-     * Remove wave source
-     * @param {number} index - Source index
-     */
-    removeWaveSource(index) {
-        if (index >= 0 && index < this.parameters.sources.length) {
-            this.parameters.sources.splice(index, 1);
-            console.log(`Wave source ${index} removed`);
-        }
-    }
-
-    /**
-     * Update wave source position
-     * @param {number} index - Source index
-     * @param {number} x - New X position
-     * @param {number} y - New Y position
-     */
-    updateWaveSource(index, x, y) {
-        if (index >= 0 && index < this.parameters.sources.length) {
-            this.parameters.sources[index] = { x, y };
-            console.log(`Wave source ${index} updated to (${x}, ${y})`);
-        }
-    }
-
-    /**
-     * Set colors
-     * @param {Object} colors - Color configuration
-     */
-    setColors(colors) {
-        this.colors = { ...this.colors, ...colors };
-        console.log('Colors updated:', this.colors);
-    }
-
-    /**
-     * Toggle gradient mode
-     */
-    toggleGradientMode() {
-        this.parameters.gradientMode = !this.parameters.gradientMode;
-        console.log('Gradient mode:', this.parameters.gradientMode);
-    }
-
-    /**
-     * Set wavelength
-     * @param {number} wavelength - New wavelength
-     */
-    setWavelength(wavelength) {
-        this.parameters.wavelength = Math.max(1, wavelength);
-        console.log('Wavelength set to:', this.parameters.wavelength);
-    }
-
-    /**
-     * Set threshold for line mode
-     * @param {number} threshold - New threshold
-     */
-    setThreshold(threshold) {
-        this.parameters.threshold = Math.max(0, Math.min(1, threshold));
-        console.log('Threshold set to:', this.parameters.threshold);
-    }
-
-    /**
-     * Set animation speed
-     * @param {number} speed - Animation speed multiplier
-     */
-    setAnimationSpeed(speed) {
-        this.animationSpeed = Math.max(0, speed);
-        console.log('Animation speed set to:', this.animationSpeed);
-    }
-
-    /**
-     * Get current wave sources
-     * @returns {Array} - Array of wave source positions
-     */
-    getWaveSources() {
-        return [...this.parameters.sources];
-    }
-
-    /**
-     * Generate random wave sources
-     * @param {number} count - Number of sources to generate
-     */
-    generateRandomSources(count = 3) {
-        const currentWidth = width || 800;
-        const currentHeight = height || 600;
+    addGlowEffect(ctx, width, height, colors) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.1;
         
-        this.parameters.sources = [];
+        // Create radial gradient for glow
+        const gradient = ctx.createRadialGradient(
+            width / 2, height / 2, 0,
+            width / 2, height / 2, Math.min(width, height) / 2
+        );
         
-        for (let i = 0; i < count; i++) {
-            this.parameters.sources.push({
-                x: Math.random() * currentWidth,
-                y: Math.random() * currentHeight
-            });
-        }
+        gradient.addColorStop(0, `rgb(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]})`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         
-        console.log(`Generated ${count} random wave sources`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        ctx.restore();
     }
-
+    
     /**
-     * Get pattern-specific info
-     * @returns {Object} - Pattern information
+     * Calculate pattern complexity for performance optimization
      */
-    getInfo() {
-        return {
-            ...super.getInfo(),
-            waveSources: this.parameters.sources.length,
-            wavelength: this.parameters.wavelength,
-            mode: this.parameters.gradientMode ? 'gradient' : 'line',
-            threshold: this.parameters.threshold,
-            animationSpeed: this.animationSpeed,
-            colors: this.colors
-        };
+    calculateComplexity(params = {}) {
+        const {
+            sourceCount = 9,
+            gradientMode = true,
+            noiseAmount = 8
+        } = params;
+        
+        let complexity = 25; // Base complexity for interference
+        
+        complexity += sourceCount * 2; // Each source adds complexity
+        complexity += gradientMode ? 15 : 5; // Gradient mode is more complex
+        complexity += noiseAmount > 0 ? 10 : 0; // Noise adds texture complexity
+        
+        return Math.min(Math.max(Math.round(complexity), 1), 100);
     }
 }
 

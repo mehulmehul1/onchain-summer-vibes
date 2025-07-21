@@ -7,6 +7,7 @@
 
 import { PatternControls } from './PatternControls.js';
 import { ThemeControls } from './ThemeControls.js';
+import { ParameterTextBox } from './ParameterTextBox.js';
 
 export class ControlPanel {
     constructor(app) {
@@ -17,6 +18,7 @@ export class ControlPanel {
         this.backdrop = null;
         this.patternControls = null;
         this.themeControls = null;
+        this.parameterTextBox = null;
         
         this.initializeUI();
         this.bindEvents();
@@ -65,7 +67,7 @@ export class ControlPanel {
     }
     
     /**
-     * Create main panel (side-by-side layout)
+     * Create main panel (side-by-side layout with parameter text box on left)
      */
     createMainPanel() {
         this.panel = document.createElement('div');
@@ -83,13 +85,25 @@ export class ControlPanel {
         
         header.appendChild(title);
         
-        // Create content area
-        const content = document.createElement('div');
-        content.className = 'control-content';
-        content.id = 'controlContent';
+        // Create main content wrapper
+        const mainContent = document.createElement('div');
+        mainContent.className = 'control-main-content';
+        
+        // Create left side for parameter text box
+        const leftSide = document.createElement('div');
+        leftSide.className = 'control-left-side';
+        leftSide.id = 'controlLeftSide';
+        
+        // Create right side for pattern/theme controls
+        const rightSide = document.createElement('div');
+        rightSide.className = 'control-right-side';
+        rightSide.id = 'controlContent';
+        
+        mainContent.appendChild(leftSide);
+        mainContent.appendChild(rightSide);
         
         this.panel.appendChild(header);
-        this.panel.appendChild(content);
+        this.panel.appendChild(mainContent);
         
         document.body.appendChild(this.panel);
     }
@@ -98,9 +112,14 @@ export class ControlPanel {
      * Create sub-components
      */
     createSubComponents() {
-        const content = document.getElementById('controlContent');
+        const leftSide = document.getElementById('controlLeftSide');
+        const rightSide = document.getElementById('controlContent');
         
-        // Pattern Controls Section
+        // Parameter Text Box (left side)
+        this.parameterTextBox = new ParameterTextBox(this.app);
+        leftSide.appendChild(this.parameterTextBox.getElement());
+        
+        // Pattern Controls Section (right side)
         const patternSection = document.createElement('div');
         patternSection.className = 'control-section';
         
@@ -113,7 +132,7 @@ export class ControlPanel {
         this.patternControls = new PatternControls(this.app);
         patternSection.appendChild(this.patternControls.getElement());
         
-        // Theme Controls Section
+        // Theme Controls Section (right side)
         const themeSection = document.createElement('div');
         themeSection.className = 'control-section';
         
@@ -126,9 +145,9 @@ export class ControlPanel {
         this.themeControls = new ThemeControls(this.app);
         themeSection.appendChild(this.themeControls.getElement());
         
-        // Add sections to content
-        content.appendChild(patternSection);
-        content.appendChild(themeSection);
+        // Add sections to right side
+        rightSide.appendChild(patternSection);
+        rightSide.appendChild(themeSection);
     }
     
     /**
@@ -161,7 +180,7 @@ export class ControlPanel {
             
             /* Side Panel */
             #controlPanel {
-                width: 320px;
+                width: 600px;
                 height: 100vh;
                 background: rgba(255, 255, 255, 0.8);
                 backdrop-filter: blur(40px);
@@ -195,10 +214,28 @@ export class ControlPanel {
                 letter-spacing: -0.5px;
             }
             
-            /* Content */
-            .control-content {
-                padding: 0 24px 24px 24px;
+            /* Main Content Layout */
+            .control-main-content {
+                display: flex;
                 flex: 1;
+                min-height: 0;
+            }
+            
+            /* Left Side - Parameter Text Box */
+            .control-left-side {
+                width: 50%;
+                padding: 0 12px 24px 24px;
+                border-right: 1px solid rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Right Side - Pattern/Theme Controls */
+            .control-right-side {
+                width: 50%;
+                padding: 0 24px 24px 12px;
+                flex: 1;
+                overflow-y: auto;
             }
             
             .control-section {
@@ -322,6 +359,9 @@ export class ControlPanel {
         if (this.themeControls) {
             this.themeControls.update();
         }
+        if (this.parameterTextBox) {
+            this.parameterTextBox.refresh();
+        }
     }
     
     /**
@@ -351,6 +391,7 @@ export class ControlPanel {
         // Cleanup sub-components
         this.patternControls?.destroy();
         this.themeControls?.destroy();
+        this.parameterTextBox?.destroy();
         
         console.log('ControlPanel destroyed');
     }

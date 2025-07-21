@@ -29,6 +29,14 @@ export class ContourInterferencePattern extends PatternRenderer {
             fillRegions: true           // Whether to fill regions between contours
         };
 
+        // Animation parameters for smooth parameter changes
+        this.animationParams = {
+            resolutionSpeed: 0.3,      // Speed of resolution animation
+            dampingSpeed: 0.5,         // Speed of damping animation
+            lastResolution: 3,         // Track last resolution for field regeneration
+            timeOffset: Math.random() * Math.PI * 2  // Random offset for varied start
+        };
+
         // Default colors
         this.colors = {
             backgroundColor: '#F0EEE6', // From React version
@@ -100,11 +108,45 @@ export class ContourInterferencePattern extends PatternRenderer {
         return b === 0 ? 0 : a / b;
     }
 
+    // Update animated parameters for smooth oscillations
+    updateAnimatedParameters(time) {
+        const offsetTime = time + this.animationParams.timeOffset;
+        
+        // Animate resolution between 3 and 8 with smooth sine wave
+        const resolutionCycle = Math.sin(offsetTime * this.animationParams.resolutionSpeed) * 0.5 + 0.5;
+        const newResolution = 3 + (resolutionCycle * 5); // 3 to 8 range
+        
+        // Animate damping factor between 0.001 and 0.075 with smooth sine wave
+        const dampingCycle = Math.sin(offsetTime * this.animationParams.dampingSpeed + Math.PI * 0.3) * 0.5 + 0.5;
+        const newDamping = 0.001 + (dampingCycle * 0.074); // 0.001 to 0.075 range
+        
+        // Check if resolution changed significantly (need to regenerate field)
+        const resolutionChanged = Math.abs(newResolution - this.animationParams.lastResolution) > 0.1;
+        
+        // Update parameters
+        this.parameters.resolution = newResolution;
+        this.parameters.dampingFactor = newDamping;
+        
+        return resolutionChanged;
+    }
+
     // Calculate field values
     updateField(time, width, height) {
         const resolution = this.parameters.resolution;
         const rows = Math.floor(height / resolution);
         const cols = Math.floor(width / resolution);
+
+        // Ensure field array exists and has correct dimensions
+        if (!this.field || this.field.length !== rows) {
+            this.field = new Array(rows).fill(0).map(() => new Array(cols).fill(0));
+        } else {
+            // Check if column count changed
+            for (let i = 0; i < rows; i++) {
+                if (!this.field[i] || this.field[i].length !== cols) {
+                    this.field[i] = new Array(cols).fill(0);
+                }
+            }
+        }
 
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
@@ -155,52 +197,40 @@ export class ContourInterferencePattern extends PatternRenderer {
         const rows = this.field.length;
         const cols = this.field[0].length;
         
-        // Create image data for pixel-level filling
-        const imageData = ctx.createImageData(cols * resolution, rows * resolution);
-        const data = imageData.data;
+        // Generate contour levels for color mapping
+        const contourLevels = this.generateContourLevels();
+        const numLevels = contourLevels.length;
         
-        // Map field values to colors
+        // Fill each grid cell with solid colors based on field value ranges
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 const fieldValue = this.field[i][j];
-                const normalizedValue = (fieldValue + 2) / 4; // Normalize to 0-1
                 
-                // Map to 4 color regions based on field value
-                let color;
-                if (normalizedValue < 0.25) {
-                    // Low values - primary color
-                    color = colors.primary;
-                } else if (normalizedValue < 0.5) {
-                    // Low-mid values - secondary color  
-                    color = colors.secondary;
-                } else if (normalizedValue < 0.75) {
-                    // High-mid values - accent color
-                    color = colors.accent;
-                } else {
-                    // High values - background color (lightest)
-                    color = colors.background;
-                }
-                
-                // Fill the grid cell
-                for (let dy = 0; dy < resolution; dy++) {
-                    for (let dx = 0; dx < resolution; dx++) {
-                        const x = j * resolution + dx;
-                        const y = i * resolution + dy;
-                        
-                        if (x < imageData.width && y < imageData.height) {
-                            const index = (y * imageData.width + x) * 4;
-                            data[index] = color[0];     // Red
-                            data[index + 1] = color[1]; // Green
-                            data[index + 2] = color[2]; // Blue
-                            data[index + 3] = 180;      // Alpha (semi-transparent)
-                        }
+                // Determine which contour level this field value falls into
+                let colorIndex = 0;
+                for (let levelIndex = 0; levelIndex < numLevels - 1; levelIndex++) {
+                    if (fieldValue >= contourLevels[levelIndex]) {
+                        colorIndex = levelIndex % 4; // Cycle through 4 colors
                     }
                 }
+                
+                // Select color based on level
+                let fillColor;
+                switch (colorIndex) {
+                    case 0: fillColor = colors.primary; break;
+                    case 1: fillColor = colors.secondary; break;
+                    case 2: fillColor = colors.accent; break;
+                    case 3: fillColor = colors.background; break;
+                }
+                
+                // Fill the grid cell area with solid color
+                ctx.fillStyle = `rgb(${fillColor[0]}, ${fillColor[1]}, ${fillColor[2]})`;
+                
+                const x = j * resolution;
+                const y = i * resolution;
+                ctx.fillRect(x, y, resolution, resolution);
             }
         }
-        
-        // Apply the filled regions
-        ctx.putImageData(imageData, 0, 0);
     }
 
     // Draw contours using marching squares algorithm
@@ -211,20 +241,11 @@ export class ContourInterferencePattern extends PatternRenderer {
         const contourLevels = this.generateContourLevels();
 
         contourLevels.forEach((level, index) => {
-            // Vary line weight based on contour level with thickness multiplier
-            const baseWidth = this.parameters.lineWidth * this.parameters.contourThickness;
-            ctx.lineWidth = index % 2 === 0 ? baseWidth : baseWidth * 0.625;
+            // Simple line style for contrast against filled regions
+            ctx.lineWidth = this.parameters.lineWidth * this.parameters.contourThickness;
             
-            // Vary line color based on contour level
-            const colorIndex = index % 4;
-            let lineColor;
-            switch (colorIndex) {
-                case 0: lineColor = colors.primary; break;
-                case 1: lineColor = colors.secondary; break;
-                case 2: lineColor = colors.accent; break;
-                case 3: lineColor = colors.background; break;
-            }
-            ctx.strokeStyle = `rgb(${lineColor[0]}, ${lineColor[1]}, ${lineColor[2]})`;
+            // Use dark outline color to separate the filled color regions
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)'; // Dark lines for contrast
             
             ctx.beginPath();
 
@@ -343,19 +364,23 @@ export class ContourInterferencePattern extends PatternRenderer {
     }
 
     render(ctx, time, width, height, colors, options = {}) {
-        // Initialize if needed
-        if (!this.field || this.field.length === 0) {
-            this.initialize(width, height);
-        }
-        
-        // Update parameters from options
+        // Update parameters from options first
         this.parameters = { ...this.parameters, ...options };
         
-        // Clear background with provided colors
-        ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
+        // Update animated parameters (resolution and damping)
+        const resolutionChanged = this.updateAnimatedParameters(time);
+        
+        // Initialize or reinitialize if needed
+        if (!this.field || this.field.length === 0 || resolutionChanged) {
+            this.initialize(width, height);
+            this.animationParams.lastResolution = this.parameters.resolution;
+        }
+        
+        // Simple solid background 
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
         
-        // Update field values
+        // Update field values with animated parameters
         this.updateField(time * this.parameters.animationSpeed, width, height);
         
         // Conditionally draw filled regions using all 4 colors

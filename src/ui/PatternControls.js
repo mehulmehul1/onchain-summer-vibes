@@ -133,6 +133,24 @@ export class PatternControls {
                 patterns: [PATTERN_TYPES.INTERFERENCE]
             },
             {
+                key: 'noiseAmount',
+                label: 'Texture Noise',
+                type: 'range',
+                min: 0,
+                max: 20,
+                step: 1,
+                patterns: [PATTERN_TYPES.INTERFERENCE]
+            },
+            {
+                key: 'phaseOffset',
+                label: 'Phase Offset',
+                type: 'range',
+                min: 0,
+                max: 6.28,
+                step: 0.1,
+                patterns: [PATTERN_TYPES.INTERFERENCE]
+            },
+            {
                 key: 'lineDensity',
                 label: 'Line Density',
                 type: 'range',
@@ -355,6 +373,12 @@ export class PatternControls {
                 min: 1,
                 max: 20,
                 step: 1,
+                patterns: [PATTERN_TYPES.SHELL_RIDGE]
+            },
+            {
+                key: 'shellRidgeColorMode',
+                label: 'Distinct Colors',
+                type: 'checkbox',
                 patterns: [PATTERN_TYPES.SHELL_RIDGE]
             },
             {
@@ -844,6 +868,27 @@ export class PatternControls {
             });
             
             inputContainer.appendChild(input);
+            
+        } else if (definition.type === 'select') {
+            input = document.createElement('select');
+            input.className = 'select-input';
+            
+            // Create option elements
+            definition.options.forEach(optionValue => {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                option.textContent = optionValue;
+                if (optionValue === (DEFAULT_VALUES[definition.key] || definition.options[0])) {
+                    option.selected = true;
+                }
+                input.appendChild(option);
+            });
+            
+            input.addEventListener('change', (e) => {
+                this.updateParameter(definition.key, e.target.value);
+            });
+            
+            inputContainer.appendChild(input);
         }
         
         controlDiv.appendChild(label);
@@ -991,6 +1036,30 @@ export class PatternControls {
                 border-radius: 4px;
             }
             
+            /* Select Input */
+            .select-input {
+                background: rgba(0, 0, 0, 0.03);
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #1d1d1f;
+                font-size: 13px;
+                font-weight: 500;
+                min-width: 100px;
+                cursor: pointer;
+                outline: none;
+            }
+            
+            .select-input:focus {
+                border-color: #007aff;
+                box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+            }
+            
+            .select-input:hover {
+                background: rgba(0, 0, 0, 0.05);
+                border-color: rgba(0, 0, 0, 0.12);
+            }
+            
             /* Responsive Design */
             @media (max-width: 768px) {
                 .pattern-selector {
@@ -1097,9 +1166,18 @@ export class PatternControls {
                     }
                 } else if (control.input.type === 'checkbox') {
                     control.input.checked = value;
+                } else if (control.input.tagName === 'SELECT') {
+                    control.input.value = value;
                 }
             }
         });
+    }
+    
+    /**
+     * Update control values from app state (alias for update method)
+     */
+    updateControlValues() {
+        this.update();
     }
     
     /**
@@ -1111,7 +1189,9 @@ export class PatternControls {
             parameters: Object.fromEntries(
                 Object.entries(this.controls).map(([key, control]) => [
                     key,
-                    control.input.type === 'checkbox' ? control.input.checked : parseFloat(control.input.value)
+                    control.input.type === 'checkbox' ? control.input.checked :
+                    control.input.tagName === 'SELECT' ? control.input.value :
+                    parseFloat(control.input.value)
                 ])
             )
         };

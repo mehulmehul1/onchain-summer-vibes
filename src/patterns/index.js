@@ -8,4 +8,6 @@
 export { PatternRenderer } from './PatternRenderer.js';
 export { PatternFactory } from './PatternFactory.js';
 export { FlamePattern } from './FlamePattern.js';
-export { default as PatternUtils } from './PatternUtils.js';x
+export { ShellRidgePattern } from './ShellRidgePattern.js';
+export { RisoPrintPattern } from './RisoPrintPattern.js';
+export { default as PatternUtils } from './PatternUtils.js';

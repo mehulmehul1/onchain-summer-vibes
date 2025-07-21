@@ -66,10 +66,36 @@ class HLGen {
    */
   capturePreview() {
     if (this.isAvailable) {
-      hl.capturePreview();
+      hl.token.capturePreview();
     } else {
       console.log('Mock capturePreview called.');
     }
+  }
+
+  /**
+   * Gets transaction info like tokenId
+   */
+  get tx() {
+    if (this.isAvailable) {
+      return hl.tx;
+    }
+    // Mock transaction object for local development
+    return {
+      tokenId: Math.floor(Math.random() * 10000)
+    };
+  }
+
+  /**
+   * Gets context info like preview mode
+   */
+  get context() {
+    if (this.isAvailable) {
+      return hl.context;
+    }
+    // Mock context object for local development
+    return {
+      previewMode: false
+    };
   }
 }
 

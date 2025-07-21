@@ -50,6 +50,8 @@ export class Q5App {
         this.threshold = DEFAULT_VALUES.threshold;
         this.gradientMode = DEFAULT_VALUES.gradientMode;
         this.sourceCount = DEFAULT_VALUES.sourceCount;
+        this.noiseAmount = DEFAULT_VALUES.noiseAmount;
+        this.phaseOffset = DEFAULT_VALUES.phaseOffset;
         this.lineDensity = DEFAULT_VALUES.lineDensity;
         this.baseLineWidth = DEFAULT_VALUES.baseLineWidth;
         this.lineWidthVariation = DEFAULT_VALUES.lineWidthVariation;
@@ -76,6 +78,7 @@ export class Q5App {
         this.numLines = DEFAULT_VALUES.numLines;
         this.shellRidgeRings = DEFAULT_VALUES.shellRidgeRings;
         this.shellRidgeDistortion = DEFAULT_VALUES.shellRidgeDistortion;
+        this.shellRidgeColorMode = DEFAULT_VALUES.shellRidgeColorMode;
         this.resolution = DEFAULT_VALUES.resolution;
         this.numRings = DEFAULT_VALUES.numRings;
         this.sourcesPerRing = DEFAULT_VALUES.sourcesPerRing;
@@ -100,6 +103,7 @@ export class Q5App {
         this.dotDensity = DEFAULT_VALUES.dotDensity;
         this.gridRotation = DEFAULT_VALUES.gridRotation;
         this.printMisregistration = DEFAULT_VALUES.printMisregistration;
+        this.animationSmoothing = DEFAULT_VALUES.animationSmoothing;
         this.growthSpeed = DEFAULT_VALUES.growthSpeed;
         this.spawnRate = DEFAULT_VALUES.spawnRate;
         this.densityVariation = DEFAULT_VALUES.densityVariation;
@@ -133,6 +137,7 @@ export class Q5App {
         
         // Initialize pattern renderers
         this.patterns = {
+            [PATTERN_TYPES.INTERFERENCE]: new InterferencePattern(),
             [PATTERN_TYPES.GENTLE]: new GentlePattern(),
             [PATTERN_TYPES.MANDALA]: new MandalaPattern(),
             [PATTERN_TYPES.VECTOR_FIELD]: new VectorFieldPattern(),
@@ -387,6 +392,21 @@ export class Q5App {
         } else {
             console.warn(`Unknown parameter: ${key}`);
         }
+        
+        // Trigger parameter text box update
+        this.refreshParameterDisplay();
+    }
+    
+    /**
+     * Refresh parameter display in the text box
+     */
+    refreshParameterDisplay() {
+        if (this.controlPanel && this.controlPanel.parameterTextBox) {
+            // Use setTimeout to ensure updates don't block rendering
+            setTimeout(() => {
+                this.controlPanel.parameterTextBox.refresh();
+            }, 0);
+        }
     }
     
     /**
@@ -543,15 +563,13 @@ export class Q5App {
         }
         
         // Render based on pattern type
-        if (this.patternType === PATTERN_TYPES.INTERFERENCE) {
-            this.renderInterferencePattern(ctx, time, finalColors);
-        } else if (this.patternType === PATTERN_TYPES.GENTLE) {
+        if (this.patternType === PATTERN_TYPES.GENTLE) {
             this.renderGentlePattern(ctx, time, width, height, finalColors, options);
         } else if (this.patterns[this.patternType]) {
             this.patterns[this.patternType].render(ctx, time, width, height, finalColors, options);
         } else {
             // Fallback to interference pattern
-            this.renderInterferencePattern(ctx, time, finalColors);
+            this.patterns[PATTERN_TYPES.INTERFERENCE].render(ctx, time, width, height, finalColors, options);
         }
         
         // Apply post-processing effects only if enhancement is enabled
@@ -571,6 +589,8 @@ export class Q5App {
             threshold: this.threshold,
             gradientMode: this.gradientMode,
             sourceCount: this.sourceCount,
+            noiseAmount: this.noiseAmount,
+            phaseOffset: this.phaseOffset,
             lineDensity: this.lineDensity,
             baseLineWidth: this.baseLineWidth,
             lineWidthVariation: this.lineWidthVariation,
@@ -597,6 +617,7 @@ export class Q5App {
             numLines: this.numLines,
             shellRidgeRings: this.shellRidgeRings,
             shellRidgeDistortion: this.shellRidgeDistortion,
+            shellRidgeColorMode: this.shellRidgeColorMode,
             resolution: this.resolution,
             numRings: this.numRings,
             sourcesPerRing: this.sourcesPerRing,
@@ -621,6 +642,7 @@ export class Q5App {
             dotDensity: this.dotDensity,
             gridRotation: this.gridRotation,
             printMisregistration: this.printMisregistration,
+            animationSmoothing: this.animationSmoothing,
             numSites: this.numSites,
             siteSpeed: this.siteSpeed,
             showBorders: this.showBorders,
