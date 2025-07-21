@@ -25,7 +25,7 @@ export class InterferencePattern {
             wavelength = 25,
             speed = 0.018,
             threshold = 0.12,
-            gradientMode = true,
+            gradientMode = false, // Default to line mode
             sourceCount = 9,
             noiseAmount = 8,
             phaseOffset = 0

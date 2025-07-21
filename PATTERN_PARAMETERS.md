@@ -41,8 +41,7 @@ Use this format when providing parameter values for patterns:
 {
   "patternType": "gentle",
   "baseParameters": {
-    "speed": [0.003, 0.015],        // Animation speed
-    "wavelength": [10, 50],         // animate between
+    "speed": [0.003, 0.015],        // Animation speed        // animate between
     "wavelength": [40, 90],         // Wave size
     "threshold": [0.6, 1.8]         // Wave visibility
   },

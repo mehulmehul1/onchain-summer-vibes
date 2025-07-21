@@ -21,13 +21,19 @@ export class GentlePattern {
      * @param {Object} options - Pattern options
      */
     render(ctx, time, width, height, colors, options = {}) {
-        const { wavelength = 25, lineDensity = 35 } = options;
+        const { 
+            wavelength = 25, 
+            lineDensity = 35,
+            visualStyle = 'sketchy', // 'sketchy' or 'dotted'
+            flowAmplitude = 0.6,     // 0.4 to 0.9
+            harmonics = 3            // 2 to 4
+        } = options;
         
         // Clear canvas with background color
         ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
         ctx.fillRect(0, 0, width, height);
         
-        const stepSize = Math.max(4, Math.ceil(width / 300));
+        const stepSize = visualStyle === 'dotted' ? Math.max(8, Math.ceil(width / 200)) : Math.max(4, Math.ceil(width / 300));
         
         // Draw horizontal flowing lines
         const numHorizontalLines = Math.min(lineDensity, Math.ceil(height / 20));
@@ -43,17 +49,43 @@ export class GentlePattern {
             ctx.lineWidth = thickness;
             ctx.strokeStyle = `rgba(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]}, ${opacity})`;
             
-            let firstPoint = true;
-            for (let x = 0; x < width; x += stepSize) {
-                const y = yPos + amplitude * Math.sin(x * frequency + speedOffset);
-                if (firstPoint) {
-                    ctx.moveTo(x, y);
-                    firstPoint = false;
-                } else {
-                    ctx.lineTo(x, y);
+            if (visualStyle === 'dotted') {
+                for (let x = 0; x < width; x += stepSize) {
+                    const y = yPos + amplitude * flowAmplitude * Math.sin(x * frequency + speedOffset);
+                    // Add harmonic waves
+                    for (let h = 2; h <= harmonics; h++) {
+                        y += (amplitude / h) * flowAmplitude * Math.sin(h * x * frequency + speedOffset);
+                    }
+                    const dotSize = thickness * 1.5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                    ctx.fill();
                 }
+            } else { // sketchy style
+                let firstPoint = true;
+                let lastX = 0, lastY = 0;
+                
+                for (let x = 0; x < width; x += stepSize) {
+                    let y = yPos + amplitude * flowAmplitude * Math.sin(x * frequency + speedOffset);
+                    // Add harmonic waves
+                    for (let h = 2; h <= harmonics; h++) {
+                        y += (amplitude / h) * flowAmplitude * Math.sin(h * x * frequency + speedOffset);
+                    }
+                    
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        // Add slight randomness for sketchy effect
+                        const jitterX = (Math.random() - 0.5) * thickness;
+                        const jitterY = (Math.random() - 0.5) * thickness;
+                        ctx.lineTo(x + jitterX, y + jitterY);
+                    }
+                    lastX = x;
+                    lastY = y;
+                }
+                ctx.stroke();
             }
-            ctx.stroke();
         }
         
         // Draw vertical flowing lines

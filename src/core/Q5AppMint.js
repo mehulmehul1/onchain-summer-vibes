@@ -127,15 +127,16 @@ export class Q5AppMint {
                 this.wavelength = 10 + hlGen.randomInt(0, 10) * 10; // Creates values: 10, 20, 30, ..., 100
                 
                 // Animation speed: 0.5-1.5 with step 0.25  
-                this.speed = 0.5 + hlGen.randomInt(0, 5) ; // Creates values: 0.5, 0.75, 1.0, 1.25, 1.5
-                
-                // Gradient mode toggle boolean
-                this.gradientMode = hlGen.random() > 0.5;
-                // this.gradientMode = hlGen.random() > 0.5;
-
+                this.speed = 0.01 + hlGen.randomInt(0, 0.25) ; // Creates values: 0.5, 0.75, 1.0, 1.25, 1.5
                 
                 // Wave sources: interpolate smoothly from 2 to 9
                 this.sourceCount = 2 + hlGen.randomInt(0, 8); // Creates values: 2, 3, 4, 5, 6, 7, 8, 9
+                
+                // Initialize options object if not exists
+                this.options = this.options || {};
+                
+                // Randomly toggle gradient mode
+                this.options.gradientMode = hlGen.random() > 0.5;
                 
                 // // Existing parameters
                 // this.noiseAmount = 8 + hlGen.randomInt(0, 12);
@@ -499,13 +500,11 @@ export class Q5AppMint {
         const options = this.getPatternOptions();
         
         // Render based on pattern type
-        if (this.patternType === PATTERN_TYPES.INTERFERENCE) {
-            this.renderInterferencePattern(ctx, time, finalColors);
-        } else if (this.patterns[this.patternType]) {
+        if (this.patterns[this.patternType]) {
             this.patterns[this.patternType].render(ctx, time, width, height, finalColors, options);
         } else {
-            // Fallback to interference pattern
-            this.renderInterferencePattern(ctx, time, finalColors);
+            // Fallback to interference pattern (using standard interface)
+            this.patterns[PATTERN_TYPES.INTERFERENCE].render(ctx, time, width, height, finalColors, options);
         }
     }
     
@@ -525,7 +524,7 @@ export class Q5AppMint {
             visualStyle: this.visualStyle,
             
             // Interference options
-            gradientMode: this.gradientMode,
+            gradientMode: this.options?.gradientMode,
             noiseAmount: this.noiseAmount,
             phaseOffset: this.phaseOffset,
             // Gentle Waves options

@@ -345,22 +345,6 @@
                         <input type="checkbox" id="pattern-contourinterference" value="contourinterference" checked>
                         <label for="pattern-contourinterference">Contour Waves</label>
                     </div>
-                    <div class="pattern-checkbox">
-                        <input type="checkbox" id="pattern-voronoi" value="voronoi" checked>
-                        <label for="pattern-voronoi">Voronoi Cells</label>
-                    </div>
-                    <div class="pattern-checkbox">
-                        <input type="checkbox" id="pattern-risoprint" value="risoprint" checked>
-                        <label for="pattern-risoprint">RISO Print</label>
-                    </div>
-                    <div class="pattern-checkbox">
-                        <input type="checkbox" id="pattern-radialgrowth" value="radialgrowth" checked>
-                        <label for="pattern-radialgrowth">Radial Growth</label>
-                    </div>
-                    <div class="pattern-checkbox">
-                        <input type="checkbox" id="pattern-flame" value="flame" checked>
-                        <label for="pattern-flame">Living Flames</label>
-                    </div>
                     <div class="pattern-actions">
                         <button class="pattern-btn" id="selectAllBtn">Select All</button>
                         <button class="pattern-btn" id="deselectAllBtn">Deselect All</button>
@@ -410,8 +394,7 @@
         // Pattern filtering state
         let enabledPatterns = new Set([
             'interference', 'gentle', 'mandala', 'vectorfield', 
-            'shellridge', 'contourinterference', 'voronoi', 
-            'risoprint', 'radialgrowth', 'flame'
+            'shellridge', 'contourinterference'
         ]);
         
         // Pattern selector functions
@@ -426,14 +409,18 @@
             }
         }
         
+        function getAllPatternCheckboxes() {
+            return patternList.querySelectorAll('input[type="checkbox"]');
+        }
+
         function updatePatternCount() {
-            const checkboxes = patternList.querySelectorAll('input[type="checkbox"]');
-            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-            selectedCount.textContent = `${checkedCount} of ${checkboxes.length} patterns selected`;
+            const patternInputs = getAllPatternCheckboxes();
+            const checkedCount = Array.from(patternInputs).filter(cb => cb.checked).length;
+            selectedCount.textContent = `${checkedCount} of ${patternInputs.length} patterns selected`;
             
             // Update enabled patterns set
             enabledPatterns.clear();
-            checkboxes.forEach(checkbox => {
+            patternInputs.forEach(checkbox => {
                 if (checkbox.checked) {
                     enabledPatterns.add(checkbox.value);
                 }
@@ -441,16 +428,14 @@
         }
         
         function selectAllPatterns() {
-            const checkboxes = patternList.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
+            getAllPatternCheckboxes().forEach(checkbox => {
                 checkbox.checked = true;
             });
             updatePatternCount();
         }
         
         function deselectAllPatterns() {
-            const checkboxes = patternList.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
+            getAllPatternCheckboxes().forEach(checkbox => {
                 checkbox.checked = false;
             });
             updatePatternCount();
@@ -459,11 +444,25 @@
         // Create custom Q5AppMint class with pattern filtering
         class FilteredQ5AppMint extends Q5AppMint {
             initializeMintParameters() {
-                // Get available patterns based on enabled filters
-                const availablePatterns = Object.values(PATTERN_TYPES).filter(pattern => enabledPatterns.has(pattern));
+                // Convert PATTERN_TYPES values to match checkbox values
+                const patternMapping = {
+                    'interference': PATTERN_TYPES.INTERFERENCE,
+                    'gentle': PATTERN_TYPES.GENTLE,
+                    'mandala': PATTERN_TYPES.MANDALA,
+                    'vectorfield': PATTERN_TYPES.VECTOR_FIELD,
+                    'shellridge': PATTERN_TYPES.SHELL_RIDGE,
+                    'contourinterference': PATTERN_TYPES.CONTOUR_INTERFERENCE
+                   
+
+                };
+                
+                // Filter patterns based on enabled checkboxes
+                const availablePatterns = Array.from(enabledPatterns)
+                    .map(pattern => patternMapping[pattern])
+                    .filter(Boolean);
                 
                 if (availablePatterns.length === 0) {
-                    // Fallback to all patterns if none selected
+                    console.warn('No patterns selected, using all patterns as fallback');
                     super.initializeMintParameters();
                     return;
                 }
@@ -471,7 +470,7 @@
                 // Use original logic but restrict to enabled patterns
                 this.patternType = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
                 
-                // Continue with original initialization for theme and other parameters
+                // Continue with original initialization for other parameters
                 this.currentTheme = this.selectRandomTheme();
                 
                 const themeData = this.getThemeData(this.currentTheme);
@@ -483,7 +482,17 @@
                 };
                 this.themeRarity = themeData.rarity;
                 
+                // Randomize pattern parameters including gradient mode for interference
                 this.randomizePatternParameters();
+                
+                // Special handling for interference pattern
+                if (this.patternType === PATTERN_TYPES.INTERFERENCE) {
+                    this.options = {
+                        ...this.options,
+                        gradientMode: Math.random() > 0.5 // 50% chance for gradient mode
+                    };
+                }
+                
                 this.generateTokenTraits();
             }
         }
@@ -514,11 +523,13 @@
             selectAllBtn.addEventListener('click', selectAllPatterns);
             deselectAllBtn.addEventListener('click', deselectAllPatterns);
             
-            // Checkbox change listeners
-            const checkboxes = patternList.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
+            // Add change listeners to pattern checkboxes
+            getAllPatternCheckboxes().forEach(checkbox => {
                 checkbox.addEventListener('change', updatePatternCount);
             });
+
+            // Initialize the pattern count display
+            updatePatternCount();
             
             // Initialize count display
             updatePatternCount();
@@ -581,7 +592,14 @@
             
             const traits = app.tokenTraits;
             
-            traitPattern.textContent = traits.Pattern || '-';
+            // Show pattern name and mode for interference
+            if (app.patternType === PATTERN_TYPES.INTERFERENCE) {
+                const mode = app.options?.gradientMode ? ' (Gradient)' : ' (Line)';
+                traitPattern.textContent = (traits.Pattern || '-') + mode;
+            } else {
+                traitPattern.textContent = traits.Pattern || '-';
+            }
+            
             traitTheme.textContent = traits.Theme || '-';
             traitSpeed.textContent = traits['Animation Speed'] || '-';
             traitComplexity.textContent = traits.Complexity || '-';
