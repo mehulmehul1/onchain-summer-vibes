@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onchain Summer Vibes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: transparent;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+        }
+        
+        /* Loading indicator */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="loading" id="loading">
+        Generating artwork...
+    </div>
+
+    <script type="module">
+        import { Q5AppMint } from './src/core/Q5AppMint.js';
+        import { PATTERN_TYPES } from './src/constants/patternConfig.js';
+        
+        let app = null;
+        
+        // DOM elements
+        const canvas = document.getElementById('canvas');
+        const loading = document.getElementById('loading');
+        
+        // Override to use random dark theme color
+        class TransparentQ5AppMint extends Q5AppMint {
+            draw(elapsed) {
+                if (!this.ctx || !this.canvas) return;
+                
+                const { width, height } = this.canvas;
+                
+                // Use random theme color selected at initialization
+                const bgColor = this.getRandomThemeColor();
+                this.ctx.fillStyle = `rgb(${bgColor[0]}, ${bgColor[1]}, ${bgColor[2]})`;
+                this.ctx.fillRect(0, 0, width, height);
+                
+                // Draw black border (backgroundPath) - SOLID BLACK, NO PATTERN
+                this.drawLogoBackground();
+                
+                // Render pattern ONLY inside white letterforms (path)
+                this.renderWithSVGClip(elapsed);
+            }
+        }
+        
+        // Show loading
+        function showLoading() {
+            loading.classList.add('visible');
+        }
+        
+        // Hide loading
+        function hideLoading() {
+            loading.classList.remove('visible');
+        }
+        
+        // Initialize artwork
+        async function initializeArtwork() {
+            try {
+                showLoading();
+                
+                // Small delay for loading display
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Create new app instance with random parameters
+                if (app) {
+                    app.initialized = false;
+                }
+                
+                app = new TransparentQ5AppMint();
+                await app.initialize(canvas);
+                
+                hideLoading();
+                
+                console.log('🎨 Onchain Summer Vibes Generated');
+                console.log('Pattern:', app.tokenTraits?.Pattern || 'Unknown');
+                console.log('Theme:', app.tokenTraits?.Theme || 'Unknown');
+                console.log('Rarity:', app.tokenTraits?.Rarity || 'Unknown');
+                
+            } catch (error) {
+                console.error('Failed to generate artwork:', error);
+                hideLoading();
+                
+                // Try again after a short delay
+                setTimeout(initializeArtwork, 1000);
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (app && app.canvas) {
+                app.canvas.width = window.innerWidth;
+                app.canvas.height = window.innerHeight;
+            }
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', initializeArtwork);
+        
+        // Add console signature
+        console.log('🎨 Onchain Summer Vibes - Generative Art Collection');
+        console.log('🌈 Each refresh generates a unique artwork with randomized patterns, themes, and parameters');
+        console.log('⭐ Built for Highlight.xyz NFT minting');
+    </script>
+</body>
+</html>

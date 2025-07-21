@@ -66,6 +66,13 @@ export class Q5AppMint {
     }
     
     /**
+     * Get a random color from the current theme (selected once at initialization)
+     */
+    getRandomThemeColor() {
+        return this.canvasBackgroundColor;
+    }
+    
+    /**
      * Initialize randomized parameters for minting using Highlight's random system
      */
     initializeMintParameters() {
@@ -88,6 +95,10 @@ export class Q5AppMint {
         
         // Randomize pattern-specific parameters
         this.randomizePatternParameters();
+        
+        // Select a random canvas background color from theme (once at initialization)
+        const allColors = [this.colors.primary, this.colors.secondary, this.colors.accent, this.colors.background];
+        this.canvasBackgroundColor = hlGen.randomElement(allColors);
         
         // Generate token traits for Highlight
         this.generateTokenTraits();
