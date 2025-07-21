@@ -63,6 +63,9 @@ export class Q5AppMint {
             [PATTERN_TYPES.RADIAL_GROWTH]: new RadialGrowthPattern(),
             [PATTERN_TYPES.FLAME]: new FlamePattern()
         };
+        
+        // Bind keyboard events
+        this.bindKeyboardEvents();
     }
     
     /**
@@ -70,6 +73,49 @@ export class Q5AppMint {
      */
     getRandomThemeColor() {
         return this.canvasBackgroundColor;
+    }
+    
+    /**
+     * Bind keyboard events for save functionality
+     */
+    bindKeyboardEvents() {
+        document.addEventListener('keydown', (event) => {
+            // Check if 'S' key is pressed
+            if (event.key.toLowerCase() === 's') {
+                event.preventDefault(); // Prevent browser default save dialog
+                this.saveAsPNG();
+            }
+        });
+    }
+    
+    /**
+     * Save current canvas as PNG
+     */
+    saveAsPNG() {
+        if (!this.canvas) return;
+        
+        try {
+            // Generate filename with pattern and theme info
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const patternName = this.tokenTraits?.Pattern || 'Unknown';
+            const themeName = this.tokenTraits?.Theme || 'Unknown';
+            const filename = `OnchainSummerVibes_${patternName}_${themeName}_${timestamp}.png`;
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = this.canvas.toDataURL('image/png', 1.0);
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`✅ Saved: ${filename}`);
+            
+        } catch (error) {
+            console.error('Failed to save PNG:', error);
+        }
     }
     
     /**
@@ -555,7 +601,7 @@ export class Q5AppMint {
         if (!this.backgroundPath2D) return;
         
         const { width, height } = this.canvas;
-        const scale = Math.min(width, height) * 0.7 / Math.max(SVG_CONFIG.width, SVG_CONFIG.height);
+        const scale = Math.min(width, height) * 0.85 / Math.max(SVG_CONFIG.width, SVG_CONFIG.height);
         
         this.ctx.save();
         this.ctx.translate(width / 2, height / 2);
@@ -575,7 +621,7 @@ export class Q5AppMint {
         if (!this.logoPath2D) return;
         
         const { width, height } = this.canvas;
-        const scale = Math.min(width, height) * 0.7 / Math.max(SVG_CONFIG.width, SVG_CONFIG.height);
+        const scale = Math.min(width, height) * 0.85 / Math.max(SVG_CONFIG.width, SVG_CONFIG.height);
         
         // Render pattern to off-screen canvas
         const patternCanvas = document.createElement('canvas');
