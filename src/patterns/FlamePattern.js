@@ -42,24 +42,26 @@ export class FlamePattern {
         ctx.fillStyle = `rgb(${colors.background[0]}, ${colors.background[1]}, ${colors.background[2]})`;
         ctx.fillRect(0, 0, width, height);
         
-        // Very slow animation timing for gentle flame motion
-        const animatedTime = time * flameSpeed * 0.00005; // Much much slower time progression
-        this.noiseOffset += flameSpeed * 0.0005; // Very slow noise evolution
+        // Faster animation timing for visible flame motion
+        const animatedTime = time * flameSpeed * 0.001; // Much faster time progression
+        this.noiseOffset += flameSpeed * 0.01; // Faster noise evolution
         
-        // Flame lifecycle: very slow ignition effect
-        const ignitionCycle = 30.0; // 30 second cycles for flame birth/death
-        const ignitionPhase = (time * 0.05) % ignitionCycle;
-        const ignitionProgress = Math.min(1.0, ignitionPhase / (ignitionCycle * 0.3)); // Slow ignition over 30% of cycle
-        const fadeProgress = ignitionPhase > (ignitionCycle * 0.8) ? 
-            1.0 - ((ignitionPhase - ignitionCycle * 0.8) / (ignitionCycle * 0.2)) : 1.0;
+        // Simplified lifecycle: always visible flames with gentle pulsing
+        const pulseCycle = 5.0; // 5 second pulse cycles
+        const pulsePhase = (time * 0.1) % pulseCycle;
+        const pulseIntensity = 0.8 + 0.2 * Math.sin(pulsePhase * Math.PI * 2 / pulseCycle); // Pulse between 0.8-1.0
+        
+        // Always keep flames visible - no ignition/fade cycles
+        const ignitionProgress = 1.0; // Always fully ignited
+        const fadeProgress = 1.0; // Never fade
         
         // Create flame color palette from theme colors
         const flameColors = this.createFlameColorPalette(colors, flameGradientSteps);
         
-        // Apply flame lifecycle effects to create slow ignition and lingering
-        const lifecycleOpacity = ignitionProgress * fadeProgress;
-        const lifecycleIntensity = flameIntensity * lifecycleOpacity;
-        const lifecycleHeight = flameHeight * (0.3 + 0.7 * ignitionProgress) * fadeProgress;
+        // Apply pulsing effects instead of lifecycle
+        const lifecycleOpacity = pulseIntensity; // Use pulse instead of lifecycle
+        const lifecycleIntensity = flameIntensity * pulseIntensity;
+        const lifecycleHeight = flameHeight; // Always full height
         
         // Render flame layers from back to front for depth
         for (let layer = flameLayerCount - 1; layer >= 0; layer--) {
@@ -77,7 +79,7 @@ export class FlamePattern {
                     flameHeight: lifecycleHeight * layerScale,
                     flameIntensity: lifecycleIntensity,
                     flameComplexity: flameComplexity + layer,
-                    flameFlicker: flameFlicker * (0.5 + 0.5 * (layer / flameLayerCount)) * ignitionProgress,
+                    flameFlicker: flameFlicker * (0.5 + 0.5 * (layer / flameLayerCount)), // Remove ignition dependency
                     flameTurbulence: flameTurbulence * layerScale,
                     flameCurl: flameCurl * layerScale,
                     flameWidth: flameWidth * layerScale,
@@ -136,8 +138,8 @@ export class FlamePattern {
         ctx.save();
         ctx.globalAlpha = opacity;
         
-        // Generate flame anchor points across the bottom
-        const numFlames = Math.max(3, Math.floor(flameComplexity * 2));
+        // Generate flame anchor points across the bottom - ensure minimum visibility
+        const numFlames = Math.max(5, Math.floor(flameComplexity * 2));
         const flameAnchors = [];
         
         for (let i = 0; i < numFlames; i++) {
@@ -309,8 +311,8 @@ export class FlamePattern {
     renderInnerFlameDetails(ctx, leftPoints, rightPoints, colors, time, options) {
         const { flameIndex, layer } = options;
         
-        // Add spiral elements inspired by the reference image
-        const spiralCount = 2 + Math.floor(Math.random() * 3);
+        // Add spiral elements - ensure at least 3 spirals
+        const spiralCount = 3 + Math.floor(Math.random() * 3);
         
         for (let s = 0; s < spiralCount; s++) {
             const spiralT = 0.2 + (s / spiralCount) * 0.6;

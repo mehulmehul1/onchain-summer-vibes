@@ -12,6 +12,64 @@ export class MandalaPattern {
     }
     
     /**
+     * Draw a star shape with rounded corners
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {number} x - Center x coordinate
+     * @param {number} y - Center y coordinate
+     * @param {number} size - Size of the star
+     * @param {number} points - Number of star points (default 5)
+     * @param {number} innerRatio - Inner radius ratio (default 0.4)
+     */
+    drawRoundedStar(ctx, x, y, size, points = 5, innerRatio = 0.4) {
+        const outerRadius = size;
+        const innerRadius = size * innerRatio;
+        const cornerRadius = size * 0.1; // Rounded corner radius
+        
+        ctx.beginPath();
+        
+        for (let i = 0; i < points * 2; i++) {
+            const angle = (i * Math.PI) / points - Math.PI / 2;
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const px = x + Math.cos(angle) * radius;
+            const py = y + Math.sin(angle) * radius;
+            
+            if (i === 0) {
+                ctx.moveTo(px, py);
+            } else {
+                // Add rounded corners by using quadratic curves
+                const prevAngle = ((i - 1) * Math.PI) / points - Math.PI / 2;
+                const prevRadius = (i - 1) % 2 === 0 ? outerRadius : innerRadius;
+                const prevX = x + Math.cos(prevAngle) * prevRadius;
+                const prevY = y + Math.sin(prevAngle) * prevRadius;
+                
+                // Control point for curve
+                const controlX = (prevX + px) / 2;
+                const controlY = (prevY + py) / 2;
+                
+                ctx.quadraticCurveTo(controlX, controlY, px, py);
+            }
+        }
+        
+        ctx.closePath();
+    }
+    
+    /**
+     * Draw a rounded rectangle
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {number} x - Center x coordinate
+     * @param {number} y - Center y coordinate
+     * @param {number} size - Size of the rectangle
+     * @param {number} cornerRadius - Corner radius
+     */
+    drawRoundedRect(ctx, x, y, size, cornerRadius = null) {
+        if (cornerRadius === null) cornerRadius = size * 0.3;
+        
+        const halfSize = size;
+        ctx.beginPath();
+        ctx.roundRect(x - halfSize, y - halfSize, halfSize * 2, halfSize * 2, cornerRadius);
+    }
+    
+    /**
      * Render geometric mandala pattern
      * @param {CanvasRenderingContext2D} ctx - Canvas context
      * @param {number} time - Animation time
@@ -38,18 +96,17 @@ export class MandalaPattern {
         const centerY = height / 2;
         const baseRadius = Math.min(width, height) / 8;
         
-        // Draw center point
+        // Draw center star
         const centerIntensity = (Math.sin(animatedTime * 0.025) + 1) / 2;
-        const centerSize = 3 + centerIntensity * 3;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, centerSize, 0, Math.PI * 2);
+        const centerSize = 5 + centerIntensity * 5;
+        this.drawRoundedStar(ctx, centerX, centerY, centerSize, 8, 0.4); // 8-pointed central star
         ctx.fillStyle = `rgba(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]}, ${0.8 + centerIntensity * 0.2})`;
         ctx.fill();
         
         // Draw concentric layers
         for (let layer = 0; layer < mandalaComplexity; layer++) {
             const radius = baseRadius * (1 + layer * layerGrowthFactor);
-            const points = 6 + layer * 2;
+            const points = 12 + layer * 4; // Increased from 6 + layer * 2
             
             for (let i = 0; i < points; i++) {
                 // Add rotation and spiral offsets to the angle
@@ -62,30 +119,36 @@ export class MandalaPattern {
                 const opacity = 0.3 + intensityPhase * 0.6;
                 const size = 2 + intensityPhase * (4 + layer);
                 
-                ctx.beginPath();
-                if (layer % 3 === 0) {
-                    // Circles
-                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                if (layer % 2 === 0) {
+                    // Stars - various sizes and point counts for variety
+                    const starPoints = 4 + (i % 3); // 4, 5, or 6 points
+                    const innerRatio = 0.3 + (i % 3) * 0.1; // Varying inner ratios
+                    this.drawRoundedStar(ctx, x, y, size, starPoints, innerRatio);
                     ctx.fillStyle = `rgba(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]}, ${opacity})`;
                     ctx.fill();
-                } else if (layer % 3 === 1) {
-                    // Squares
-                    ctx.rect(x - size, y - size, size * 2, size * 2);
-                    ctx.fillStyle = `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, ${opacity})`;
-                    ctx.fill();
                 } else {
-                    // Diamonds
-                    ctx.moveTo(x, y - size);
-                    ctx.lineTo(x + size, y);
-                    ctx.lineTo(x, y + size);
-                    ctx.lineTo(x - size, y);
-                    ctx.closePath();
-                    ctx.fillStyle = `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, ${opacity})`;
+                    // Planets (circles with subtle glow effect)
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    
+                    // Create gradient for planet glow
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 1.5);
+                    gradient.addColorStop(0, `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, ${opacity})`);
+                    gradient.addColorStop(0.7, `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, ${opacity * 0.6})`);
+                    gradient.addColorStop(1, `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    // Add smaller bright core
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.6, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, ${opacity * 0.8})`;
                     ctx.fill();
                 }
                 
-                // Draw secondary elements
-                if (layer > 0 && i % 2 === 0) {
+                // Draw secondary elements - more frequent
+                if (layer > 0 && i % 1 === 0) { // Changed from i % 2 to i % 1 (every element)
                     const secondaryRadius = radius * 0.6;
                     const x2 = centerX + Math.cos(angle + 0.3) * secondaryRadius;
                     const y2 = centerY + Math.sin(angle + 0.3) * secondaryRadius;
@@ -94,16 +157,16 @@ export class MandalaPattern {
                     const secondaryOpacity = 0.2 + secondaryIntensity * 0.4;
                     const secondarySize = 1 + secondaryIntensity * 2;
                     
-                    ctx.beginPath();
-                    ctx.arc(x2, y2, secondarySize, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, ${secondaryOpacity})`;
+                    // Small secondary stars
+                    this.drawRoundedStar(ctx, x2, y2, secondarySize, 4, 0.5); // 4-pointed small stars
+                    ctx.fillStyle = `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, ${secondaryOpacity})`;
                     ctx.fill();
                 }
             }
         }
         
-        // Draw connecting lines
-        const numConnections = Math.floor(mandalaComplexity * 8);
+        // Draw connecting lines - increased density
+        const numConnections = Math.floor(mandalaComplexity * 16); // Increased from * 8
         for (let i = 0; i < numConnections; i++) {
             // Add rotation to connecting lines
             const angle = (i / numConnections) * Math.PI * 2 + (animatedTime * 0.002 * rotationSpeed);
@@ -126,10 +189,10 @@ export class MandalaPattern {
             ctx.stroke();
         }
         
-        // Draw concentric rings with dots
-        for (let ring = 1; ring <= 3; ring++) {
-            const ringRadius = baseRadius * (0.3 + ring * 0.4);
-            const ringPoints = ring * 8;
+        // Draw concentric rings with dots - increased density
+        for (let ring = 1; ring <= 5; ring++) { // Increased from 3 to 5 rings
+            const ringRadius = baseRadius * (0.2 + ring * 0.3); // Tighter spacing
+            const ringPoints = ring * 16; // Increased from ring * 8
             
             for (let i = 0; i < ringPoints; i++) {
                 // Add rotation to inner dot rings
@@ -147,6 +210,54 @@ export class MandalaPattern {
                 ctx.fillStyle = `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, ${dotOpacity})`;
                 ctx.fill();
             }
+        }
+        
+        // Add background starfield for extra density
+        const backgroundStars = mandalaComplexity * 30; // Lots of background stars
+        for (let i = 0; i < backgroundStars; i++) {
+            const angle = (Math.random() * Math.PI * 2);
+            const distance = baseRadius * (0.5 + Math.random() * 3.5); // Random distances
+            const x = centerX + Math.cos(angle) * distance;
+            const y = centerY + Math.sin(angle) * distance;
+            
+            // Only draw if within canvas bounds
+            if (x >= 0 && x <= width && y >= 0 && y <= height) {
+                const starIntensity = (Math.sin(animatedTime * (0.01 + Math.random() * 0.02) + i * 0.1) + 1) / 2;
+                const starOpacity = 0.1 + starIntensity * 0.3;
+                const starSize = 0.5 + Math.random() * 1.5;
+                
+                // Mix of tiny stars and small planets
+                if (i % 4 === 0) {
+                    // Tiny background stars
+                    this.drawRoundedStar(ctx, x, y, starSize, 4, 0.4);
+                    ctx.fillStyle = `rgba(${colors.accent[0]}, ${colors.accent[1]}, ${colors.accent[2]}, ${starOpacity})`;
+                    ctx.fill();
+                } else {
+                    // Tiny background dots (distant stars)
+                    ctx.beginPath();
+                    ctx.arc(x, y, starSize * 0.7, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${colors.primary[0]}, ${colors.primary[1]}, ${colors.primary[2]}, ${starOpacity * 0.8})`;
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Add additional orbital debris/asteroids
+        const debrisCount = mandalaComplexity * 20;
+        for (let i = 0; i < debrisCount; i++) {
+            const orbitRadius = baseRadius * (0.8 + Math.random() * 2.5);
+            const angle = (Math.random() * Math.PI * 2) + (animatedTime * 0.003 * rotationSpeed);
+            const x = centerX + Math.cos(angle) * orbitRadius;
+            const y = centerY + Math.sin(angle) * orbitRadius;
+            
+            const debrisIntensity = (Math.sin(animatedTime * 0.015 + i * 0.05) + 1) / 2;
+            const debrisOpacity = 0.05 + debrisIntensity * 0.15;
+            const debrisSize = 0.3 + Math.random() * 0.8;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, debrisSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${colors.secondary[0]}, ${colors.secondary[1]}, ${colors.secondary[2]}, ${debrisOpacity})`;
+            ctx.fill();
         }
     }
 

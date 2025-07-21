@@ -24,7 +24,9 @@ export class GentlePattern {
         const { 
             wavelength = 25, 
             lineDensity = 35,
-            visualStyle = 'sketchy', // 'sketchy' or 'dotted'
+            baseLineWidth = 2.0,
+            lineWidthVariation = 1.0,
+            visualStyle = 'smooth', // 'smooth' or 'dotted'
             flowAmplitude = 0.6,     // 0.4 to 0.9
             harmonics = 3            // 2 to 4
         } = options;
@@ -42,7 +44,7 @@ export class GentlePattern {
             const amplitude = (35 + 20 * Math.sin(time * 0.2 + i * 0.1)) * (wavelength / 25);
             const frequency = (0.008 + 0.004 * Math.sin(time * 0.1 + i * 0.05)) * (25 / wavelength);
             const speedOffset = time * (0.5 + 0.3 * Math.sin(i * 0.1));
-            const thickness = 1.5 + 1.0 * Math.sin(time + i * 0.2);
+            const thickness = baseLineWidth + lineWidthVariation * Math.sin(time + i * 0.2);
             const opacity = 0.4 + 0.3 * Math.abs(Math.sin(time * 0.3 + i * 0.15));
             
             ctx.beginPath();
@@ -51,7 +53,7 @@ export class GentlePattern {
             
             if (visualStyle === 'dotted') {
                 for (let x = 0; x < width; x += stepSize) {
-                    const y = yPos + amplitude * flowAmplitude * Math.sin(x * frequency + speedOffset);
+                    let y = yPos + amplitude * flowAmplitude * Math.sin(x * frequency + speedOffset);
                     // Add harmonic waves
                     for (let h = 2; h <= harmonics; h++) {
                         y += (amplitude / h) * flowAmplitude * Math.sin(h * x * frequency + speedOffset);
@@ -61,7 +63,7 @@ export class GentlePattern {
                     ctx.arc(x, y, dotSize, 0, Math.PI * 2);
                     ctx.fill();
                 }
-            } else { // sketchy style
+            } else { // smooth style
                 let firstPoint = true;
                 let lastX = 0, lastY = 0;
                 
@@ -76,10 +78,14 @@ export class GentlePattern {
                         ctx.moveTo(x, y);
                         firstPoint = false;
                     } else {
-                        // Add slight randomness for sketchy effect
-                        const jitterX = (Math.random() - 0.5) * thickness;
-                        const jitterY = (Math.random() - 0.5) * thickness;
-                        ctx.lineTo(x + jitterX, y + jitterY);
+                        if (visualStyle === 'smooth') {
+                            ctx.lineTo(x, y);
+                        } else {
+                            // Add slight randomness for sketchy effect
+                            const jitterX = (Math.random() - 0.5) * thickness;
+                            const jitterY = (Math.random() - 0.5) * thickness;
+                            ctx.lineTo(x + jitterX, y + jitterY);
+                        }
                     }
                     lastX = x;
                     lastY = y;
@@ -95,7 +101,7 @@ export class GentlePattern {
             const amplitude = (30 + 15 * Math.sin(time * 0.15 + i * 0.12)) * (wavelength / 25);
             const frequency = (0.009 + 0.004 * Math.cos(time * 0.12 + i * 0.07)) * (25 / wavelength);
             const speedOffset = time * (0.4 + 0.25 * Math.cos(i * 0.15));
-            const thickness = 1.2 + 0.8 * Math.sin(time + i * 0.3);
+            const thickness = baseLineWidth * 0.8 + lineWidthVariation * 0.6 * Math.sin(time + i * 0.3);
             const opacity = 0.3 + 0.2 * Math.abs(Math.sin(time * 0.25 + i * 0.18));
             
             ctx.beginPath();
@@ -122,7 +128,7 @@ export class GentlePattern {
             const amplitude = (20 + 10 * Math.cos(time * 0.25 + i * 0.1)) * (wavelength / 25);
             const frequency = (0.01 + 0.005 * Math.sin(time * 0.15 + i * 0.08)) * (25 / wavelength);
             const phase = time * (0.3 + 0.2 * Math.sin(i * 0.1));
-            const thickness = 1.0 + 0.5 * Math.sin(time + i * 0.25);
+            const thickness = baseLineWidth * 0.6 + lineWidthVariation * 0.4 * Math.sin(time + i * 0.25);
             const opacity = 0.2 + 0.15 * Math.abs(Math.sin(time * 0.2 + i * 0.1));
             
             ctx.beginPath();

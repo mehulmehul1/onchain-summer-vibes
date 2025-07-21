@@ -50,8 +50,14 @@ Use this format when providing parameter values for patterns:
     "flowAmplitude": [0.3, 0.8],    // Wave height
     "harmonics": [1, 3]             // Wave complexity
   }
+
 }
+  linedensity 15,40
+  baselinewidth 3, 9
+  base
+
 ```
+
 
 ## 3. MANDALA PATTERN
 **Visual**: Geometric sacred mandala with breathing animation
@@ -72,6 +78,14 @@ Use this format when providing parameter values for patterns:
     "breathingIntensity": [0.1, 0.5] // Breathing effect
   }
 }
+
+ now in mandala pattern    
+ layer spacing 0.2,0.5
+ complexity 15,20, step1
+ rotation speed 10,16
+ animation speed 2.5,4
+ galaxy rotation 1.5
+ spiral arms 1.2,1.6
 ```
 
 ## 4. VECTOR FIELD PATTERN

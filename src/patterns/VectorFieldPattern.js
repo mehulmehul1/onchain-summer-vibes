@@ -313,6 +313,20 @@ export class VectorFieldPattern {
                     };
                 };
             
+            case 'circle':
+                return (x, y, t) => {
+                    const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);
+                    const cx = x + offsetX - width / 2;
+                    const cy = y + offsetY - height / 2;
+                    const r = Math.sqrt(cx * cx + cy * cy);
+                    const angle = Math.atan2(cy, cx) + t * 0.002;
+                    // Circular flow around center
+                    return { 
+                        x: -Math.sin(angle) * strength, 
+                        y: Math.cos(angle) * strength 
+                    };
+                };
+            
             default: // 'radial'
                 return (x, y, t) => {
                     const { offsetX, offsetY } = this.getTileOffset(x, y, t, tileSize, tileShiftAmplitude);

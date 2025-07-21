@@ -12,10 +12,22 @@ export class RisoPrintPattern {
         
         // Animation parameters for smooth parameter changes
         this.animationParams = {
-            irregularitySpeed: 0.2,    // Speed of irregularity animation
-            densitySpeed: 0.15,        // Speed of dot density animation
-            halftoneSpeed: 0.25,       // Speed of halftone size animation
-            timeOffset: Math.random() * Math.PI * 2  // Random offset for varied start
+            irregularitySpeed: 0.15 + Math.random() * 0.2,    // Randomized speed
+            densitySpeed: 0.1 + Math.random() * 0.15,         // Randomized speed  
+            halftoneSpeed: 0.2 + Math.random() * 0.2,         // Randomized speed
+            timeOffset: Math.random() * Math.PI * 2,          // Random offset for varied start
+            
+            // New randomized direction parameters
+            irregularityDirection: Math.random() > 0.5 ? 1 : -1,  // Random direction
+            densityDirection: Math.random() > 0.5 ? 1 : -1,       // Random direction
+            halftoneDirection: Math.random() > 0.5 ? 1 : -1,      // Random direction
+            rotationDirection: Math.random() > 0.5 ? 1 : -1,      // Random rotation direction
+            
+            // Random phase offsets for each parameter
+            irregularityPhase: Math.random() * Math.PI * 2,
+            densityPhase: Math.random() * Math.PI * 2,
+            halftonePhase: Math.random() * Math.PI * 2,
+            rotationPhase: Math.random() * Math.PI * 2
         };
     }
     
@@ -25,16 +37,25 @@ export class RisoPrintPattern {
     updateAnimatedParameters(time) {
         const offsetTime = time + this.animationParams.timeOffset;
         
-        // Animate grid irregularity between 0.1 and 0.5 with smooth sine wave
-        const irregularityCycle = Math.sin(offsetTime * this.animationParams.irregularitySpeed) * 0.5 + 0.5;
+        // Animate grid irregularity with randomized direction and phase
+        const irregularityCycle = Math.sin(
+            offsetTime * this.animationParams.irregularitySpeed * this.animationParams.irregularityDirection + 
+            this.animationParams.irregularityPhase
+        ) * 0.5 + 0.5;
         const animatedIrregularity = 0.1 + (irregularityCycle * 0.4); // 0.1 to 0.5 range
         
-        // Animate dot density between 0.2 and 0.9 with smooth sine wave
-        const densityCycle = Math.sin(offsetTime * this.animationParams.densitySpeed + Math.PI * 0.4) * 0.5 + 0.5;
+        // Animate dot density with randomized direction and phase
+        const densityCycle = Math.sin(
+            offsetTime * this.animationParams.densitySpeed * this.animationParams.densityDirection + 
+            this.animationParams.densityPhase
+        ) * 0.5 + 0.5;
         const animatedDensity = 0.2 + (densityCycle * 0.7); // 0.2 to 0.9 range
         
-        // Animate halftone size between 6 and 30 with smooth sine wave
-        const halftoneCycle = Math.sin(offsetTime * this.animationParams.halftoneSpeed + Math.PI * 0.6) * 0.5 + 0.5;
+        // Animate halftone size with randomized direction and phase
+        const halftoneCycle = Math.sin(
+            offsetTime * this.animationParams.halftoneSpeed * this.animationParams.halftoneDirection + 
+            this.animationParams.halftonePhase
+        ) * 0.5 + 0.5;
         const animatedHalftoneSize = 6 + (halftoneCycle * 24); // 6 to 30 range
         
         return {
@@ -84,9 +105,15 @@ export class RisoPrintPattern {
         cmykColors.forEach((colorLayer, index) => {
             ctx.save();
             
-            // Apply slight misregistration offset (like real RISO printing) - very slow movement
-            const offsetX = Math.sin(animatedTime * 0.0005 + index) * printMisregistration;
-            const offsetY = Math.cos(animatedTime * 0.0005 + index) * printMisregistration;
+            // Apply slight misregistration offset with randomized direction and phase
+            const offsetX = Math.sin(
+                animatedTime * 0.0005 * this.animationParams.rotationDirection + 
+                index + this.animationParams.rotationPhase
+            ) * printMisregistration;
+            const offsetY = Math.cos(
+                animatedTime * 0.0008 * this.animationParams.rotationDirection + 
+                index + this.animationParams.rotationPhase + Math.PI * 0.3
+            ) * printMisregistration;
             ctx.translate(offsetX, offsetY);
             
             // Set blend mode for overprinting effect (use lighter blend mode)
@@ -170,9 +197,10 @@ export class RisoPrintPattern {
         ctx.save();
         ctx.globalAlpha = colorLayer.opacity;
         
-        // Apply grid rotation - very slow
+        // Apply grid rotation with randomized direction
         ctx.translate(width / 2, height / 2);
-        ctx.rotate(rotation + Math.sin(time * 0.001) * 0.01);
+        ctx.rotate(rotation + Math.sin(time * 0.001 * this.animationParams.rotationDirection + 
+                   this.animationParams.rotationPhase) * 0.02);
         ctx.translate(-width / 2, -height / 2);
         
         for (let row = -1; row < gridRows; row++) {
@@ -181,18 +209,22 @@ export class RisoPrintPattern {
                 let x = col * cellSize;
                 let y = row * cellSize;
                 
-                // Add irregularity to grid - very slow movement
-                const irregularityX = (Math.sin(col * 0.5 + row * 0.3 + time * 0.002) * gridIrregularity * cellSize);
-                const irregularityY = (Math.cos(col * 0.3 + row * 0.5 + time * 0.002) * gridIrregularity * cellSize);
+                // Add irregularity to grid with randomized movement
+                const irregularityX = (Math.sin(col * 0.5 + row * 0.3 + time * 0.002 * this.animationParams.irregularityDirection + 
+                                               this.animationParams.irregularityPhase) * gridIrregularity * cellSize);
+                const irregularityY = (Math.cos(col * 0.3 + row * 0.5 + time * 0.003 * this.animationParams.irregularityDirection + 
+                                               this.animationParams.irregularityPhase + Math.PI * 0.7) * gridIrregularity * cellSize);
                 
                 x += irregularityX;
                 y += irregularityY;
                 
-                // Calculate density based on position and time - deterministic
+                // Calculate density based on position and time with randomized movement
                 const distanceFromCenter = Math.sqrt(
                     Math.pow(x - width / 2, 2) + Math.pow(y - height / 2, 2)
                 );
-                const densityFactor = 0.3 + Math.sin(distanceFromCenter * 0.01 + time * 0.003) * 0.7;
+                const densityFactor = 0.3 + Math.sin(distanceFromCenter * 0.01 + 
+                                             time * 0.003 * this.animationParams.densityDirection + 
+                                             this.animationParams.densityPhase) * 0.7;
                 
                 // Use deterministic pattern instead of random for stable dots
                 const dotPattern = Math.sin(col * 7.3 + row * 11.7 + layerIndex * 5.1) * 0.5 + 0.5;
@@ -240,9 +272,10 @@ export class RisoPrintPattern {
                          shapeRandom < 0.6 ? 'square' :
                          shapeRandom < 0.8 ? 'rectangle' : 'diamond';
         
-        // Calculate size with variation - very slow size changes
+        // Calculate size with randomized variation
         const baseSize = cellSize * 0.3;
-        const sizeVariation = Math.sin(col * 7.1 + row * 11.3 + time * 0.001) * shapeVariation;
+        const sizeVariation = Math.sin(col * 7.1 + row * 11.3 + time * 0.001 * this.animationParams.halftoneDirection + 
+                                      this.animationParams.halftonePhase) * shapeVariation;
         const size = baseSize * (0.5 + densityFactor * 0.5) * (1 + sizeVariation * 0.5);
         
         // Set color with slight variation
@@ -259,8 +292,9 @@ export class RisoPrintPattern {
         ctx.save();
         ctx.translate(x, y);
         
-        // Add slight rotation for organic feel - very slow
-        const rotation = Math.sin(col * 3.7 + row * 5.3 + time * 0.0008) * 0.05;
+        // Add slight rotation for organic feel with randomized direction
+        const rotation = Math.sin(col * 3.7 + row * 5.3 + time * 0.0008 * this.animationParams.rotationDirection + 
+                                 this.animationParams.rotationPhase) * 0.05;
         ctx.rotate(rotation);
         
         this.drawShape(ctx, shapeType, size);

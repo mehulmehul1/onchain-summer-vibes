@@ -144,11 +144,23 @@ export class Q5AppMint {
                 break;
 
             case PATTERN_TYPES.MANDALA:
-                this.mandalaComplexity = 4 + hlGen.randomInt(0, 8);
-                this.mandalaSpeed = 0.5 + hlGen.random() * 1.5;
-                this.rotationSpeed = 0.1 + hlGen.random() * 0.3;
-                this.spiralArmFactor = 0.2 + hlGen.random() * 0.6;
-                this.layerGrowthFactor = 0.4 + hlGen.random() * 0.6;
+                // Layer spacing: 0.2-0.5
+                this.layerGrowthFactor = 0.2 + hlGen.random() * 0.3;
+                
+                // Complexity: 15-20 with step 1
+                this.mandalaComplexity = 15 + hlGen.randomInt(0, 6);
+                
+                // Rotation speed: 10-16
+                this.rotationSpeed = 10 + hlGen.random() * 6;
+                
+                // Animation speed: 2.5-4
+                this.mandalaSpeed = 2.5 + hlGen.random() * 1.5;
+                
+                // Galaxy rotation: fixed at 1.5
+                this.galaxyRotation = 1.5;
+                
+                // Spiral arms: 1.2-1.6
+                this.spiralArmFactor = 1.2 + hlGen.random() * 0.4;
                 break;
                 
             case PATTERN_TYPES.SHELL_RIDGE:
@@ -158,13 +170,41 @@ export class Q5AppMint {
                 break;
                 
             case PATTERN_TYPES.FLAME:
-                this.flameHeight = 0.6 + hlGen.random() * 0.3;
-                this.flameSpeed = 0.2 + hlGen.random() * 0.4;
-                this.flameIntensity = 0.4 + hlGen.random() * 0.4;
-                this.flameComplexity = 3 + hlGen.randomInt(0, 5);
-                this.flameFlicker = 0.1 + hlGen.random() * 0.3;
-                this.flameTurbulence = 0.1 + hlGen.random() * 0.2;
-                this.flameLayerCount = 2 + hlGen.randomInt(0, 3);
+                // Flame height: 0.7-0.95 (taller flames)
+                this.flameHeight = 0.7 + hlGen.random() * 0.25;
+                
+                // Flame speed: 1.5-3.0 (much faster animation)
+                this.flameSpeed = 1.5 + hlGen.random() * 1.5;
+                
+                // Flame intensity: 0.8-1.0 (always high intensity)
+                this.flameIntensity = 0.8 + hlGen.random() * 0.2;
+                
+                // Flame complexity: 6-12 (more flames)
+                this.flameComplexity = 6 + hlGen.randomInt(0, 7);
+                
+                // Flame flicker: 0.4-0.8 (more dynamic)
+                this.flameFlicker = 0.4 + hlGen.random() * 0.4;
+                
+                // Flame turbulence: 0.3-0.6 (more organic movement)
+                this.flameTurbulence = 0.3 + hlGen.random() * 0.3;
+                
+                // Flame layer count: 3-6 (more depth)
+                this.flameLayerCount = 3 + hlGen.randomInt(0, 4);
+                
+                // Flame opacity: 0.9-1.0 (always visible)
+                this.flameOpacity = 0.9 + hlGen.random() * 0.1;
+                
+                // Flame curl: 0.4-0.8 (more dramatic curves)
+                this.flameCurl = 0.4 + hlGen.random() * 0.4;
+                
+                // Flame width: 0.3-0.7 (varied widths)
+                this.flameWidth = 0.3 + hlGen.random() * 0.4;
+                
+                // Flame spread: 0.3-0.6 (controlled spread)
+                this.flameSpread = 0.3 + hlGen.random() * 0.3;
+                
+                // Flame gradient steps: 10-16 (smoother gradients)
+                this.flameGradientSteps = 10 + hlGen.randomInt(0, 7);
                 break;
                 
             case PATTERN_TYPES.RISO_PRINT:
@@ -177,41 +217,99 @@ export class Q5AppMint {
                 break;
                 
             case PATTERN_TYPES.VECTOR_FIELD:
-                this.vectorFieldStrength = 0.8 + hlGen.random() * 0.4;
+                // Field strength: 2.5-3
+                this.vectorFieldStrength = 2.5 + hlGen.random() * 0.5;
+                
+                // Tile size: fixed at 300
+                this.tileSize = 300;
+                
+                // Tile shift: fixed at 32
+                this.tileShiftAmplitude = 32;
+                
+                // Spawn radius: 200-280
+                this.spawnRadius = 200 + hlGen.random() * 80;
+                
+                // Flow speed: fixed at 2
+                this.flowSpeed = 2;
+                
+                // Line opacity: 0.75-1
+                this.lineOpacity = 0.75 + hlGen.random() * 0.25;
+                
+                // Line thickness: 8-12
+                this.lineThickness = 12 + hlGen.random() * 8;
+                
+                // Line count: 75-100
+                this.numLines = 75 + hlGen.randomInt(0, 26);
+                
+                // Animate between spiral, grid, circle
+                this.vectorFieldType = hlGen.randomElement(['spiral', 'grid', 'circle']);
+                
+                // Color blending mode: tile, position, velocity, age
+                this.colorBlending = hlGen.randomElement(['tile', 'position', 'velocity', 'age']);
+                
+                // Keep existing noise scale
                 this.noiseScale = 0.005 + hlGen.random() * 0.01;
-                this.flowSpeed = 0.3 + hlGen.random() * 0.4;
                 this.lineLifespan = 300 + hlGen.randomInt(0, 200);
-                this.numLines = 300 + hlGen.randomInt(0, 200);
                 break;
                 
             case PATTERN_TYPES.GENTLE:
                 this.lineDensity = 25 + hlGen.randomInt(0, 20);
                 this.sourceCount = 6 + hlGen.randomInt(0, 6);
-                this.baseLineWidth = 1.5 + hlGen.random() * 1.0;
-                this.lineWidthVariation = 1.0 + hlGen.random() * 1.0;
-                this.visualStyle = hlGen.randomElement(['smooth', 'angular']);
+                this.baseLineWidth =  hlGen.randomInt(3,7) * 2.0;
+                this.lineWidthVariation = 3.0 + hlGen.random() * 1.0;
+                this.visualStyle = hlGen.randomElement(['smooth', 'dotted']);
                 break;
                 
             case PATTERN_TYPES.CONTOUR_INTERFERENCE:
                 this.numRings = 2 + hlGen.randomInt(0, 3);
-                this.sourcesPerRing = 4 + hlGen.randomInt(0, 6);
-                this.lineWidth = 0.5 + hlGen.random() * 1.0;
+                this.sourcesPerRing = 4 + hlGen.randomInt(3, 6);
+                this.lineWidth = 1 + hlGen.random() * 1.0;
                 this.animationSpeed = 0.001 + hlGen.random() * 0.002;
                 this.wavelengthVariation = 0.1 + hlGen.random() * 0.3;
                 this.amplitudeDecay = 0.1 + hlGen.random() * 0.3;
                 this.phaseShift = hlGen.random() * Math.PI * 2;
-                this.dampingFactor = 0.001 + hlGen.random() * 0.004;
+                this.dampingFactor = 0.1 + hlGen.random() * 0.04;
                 this.contourThickness = 0.8 + hlGen.random() * 1.2;
                 this.maxDistance = 300 + hlGen.randomInt(0, 200);
                 this.nonlinearity = hlGen.random() * 0.5;
-                this.contourLevels = 4 + hlGen.randomInt(0, 4);
-                this.fillRegions = hlGen.random() > 0.3;
+                this.contourLevels = 3 + hlGen.randomInt(0, 4);
+                this.fillRegions = hlGen.random() > 0.5;
                 break;
                 
             case PATTERN_TYPES.RADIAL_GROWTH:
-                // Add radial growth specific parameters when that pattern is implemented
+                // Max colonies: 100-140 (dense populations)
+                this.maxColonies = 100 + hlGen.randomInt(0, 41);
+                
+                // Lifespan: 0.3-0.8 (shorter for faster turnover)
+                this.lifespan = 0.3 + hlGen.random() * 0.5;
+                
+                // Opacity: fixed at 1 (fully visible)
+                this.opacity = 1;
+                
+                // Clustering/clusterTendency: 0.7-0.9 (high clustering)
+                this.clusterTendency = 0.7 + hlGen.random() * 0.2;
+                
+                // Size variety: 1.5-3.0 (more variation)
+                this.sizeVariation = 1.5 + hlGen.random() * 1.5;
+                
+                // Density variety: 2.0-3.0 (very dense)
+                this.densityVariation = 2.0 + hlGen.random() * 1.0;
+                
+                // Spawn rate: 5-15 frames (very fast spawning)
+                this.spawnRate = 5 + hlGen.randomInt(0, 11);
+                
+                // Growth speed: 1.8-2.5 (fast growth)
+                this.growthSpeed = 1.8 + hlGen.random() * 0.7;
+                
+                // Center bias: 0.6-1.0 (spawn near center)
+                this.centerBias = 0.6 + hlGen.random() * 0.4;
+                
+                // Irregularity: 0.2-0.6 (organic variation)
+                this.irregularity = 0.2 + hlGen.random() * 0.4;
+                
+                // Keep existing parameters for compatibility
                 this.radialComplexity = 6 + hlGen.randomInt(0, 6);
-                this.radialSpeed = 0.5 + hlGen.random() * 1.0;
+                this.radialSpeed = this.growthSpeed;
                 break;
                 
             // Add default values for other patterns  
@@ -539,6 +637,13 @@ export class Q5AppMint {
             flowSpeed: this.flowSpeed,
             lineLifespan: this.lineLifespan,
             numLines: this.numLines,
+            tileSize: this.tileSize,
+            tileShiftAmplitude: this.tileShiftAmplitude,
+            spawnRadius: this.spawnRadius,
+            lineOpacity: this.lineOpacity,
+            lineThickness: this.lineThickness,
+            vectorFieldType: this.vectorFieldType,
+            colorBlending: this.colorBlending,
 
             // Mandala options
             mandalaComplexity: this.mandalaComplexity,
@@ -546,6 +651,7 @@ export class Q5AppMint {
             rotationSpeed: this.rotationSpeed,
             spiralArmFactor: this.spiralArmFactor,
             layerGrowthFactor: this.layerGrowthFactor,
+            galaxyRotation: this.galaxyRotation,
             
             // Shell Ridge options
             shellRidgeRings: this.shellRidgeRings,
@@ -560,6 +666,11 @@ export class Q5AppMint {
             flameFlicker: this.flameFlicker,
             flameTurbulence: this.flameTurbulence,
             flameLayerCount: this.flameLayerCount,
+            flameOpacity: this.flameOpacity,
+            flameCurl: this.flameCurl,
+            flameWidth: this.flameWidth,
+            flameSpread: this.flameSpread,
+            flameGradientSteps: this.flameGradientSteps,
             
             // RISO Print options
             risoComplexity: this.risoComplexity,
@@ -575,6 +686,13 @@ export class Q5AppMint {
             flowSpeed: this.flowSpeed,
             lineLifespan: this.lineLifespan,
             numLines: this.numLines,
+            tileSize: this.tileSize,
+            tileShiftAmplitude: this.tileShiftAmplitude,
+            spawnRadius: this.spawnRadius,
+            lineOpacity: this.lineOpacity,
+            lineThickness: this.lineThickness,
+            vectorFieldType: this.vectorFieldType,
+            colorBlending: this.colorBlending,
             
             // Contour Interference options
             numRings: this.numRings,
@@ -593,7 +711,17 @@ export class Q5AppMint {
             
             // Radial Growth options
             radialComplexity: this.radialComplexity,
-            radialSpeed: this.radialSpeed
+            radialSpeed: this.radialSpeed,
+            maxColonies: this.maxColonies,
+            lifespan: this.lifespan,
+            opacity: this.opacity,
+            clusterTendency: this.clusterTendency,
+            sizeVariation: this.sizeVariation,
+            densityVariation: this.densityVariation,
+            spawnRate: this.spawnRate,
+            growthSpeed: this.growthSpeed,
+            centerBias: this.centerBias,
+            irregularity: this.irregularity
         };
     }
     
