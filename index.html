@@ -139,8 +139,14 @@
         let batchGeneration = {
             running: false,
             count: 0,
-            total: 0
+            total: 0,
+            recordingVideo: false
         };
+        
+        // Video recording state
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingFormat = 'mp4'; // 'mp4', 'gif', or 'both'
         
         // Add keyboard shortcuts
         document.addEventListener('keydown', (event) => {
@@ -151,7 +157,379 @@
                     app.saveAsPNG();
                 }
             }
+            
+            // Reload with Spacebar
+            if (event.code === 'Space') {
+                event.preventDefault(); // Prevent page scroll
+                if (!batchGeneration.running) {
+                    initializeArtwork();
+                }
+            }
+            
+            // Start batch generation with B key
+            if (event.key.toLowerCase() === 'b') {
+                event.preventDefault();
+                if (!batchGeneration.running) {
+                    startBatchGeneration();
+                }
+            }
+            
+            // Start batch video generation with V key (MP4)
+            if (event.key.toLowerCase() === 'v') {
+                event.preventDefault();
+                if (!batchGeneration.running) {
+                    recordingFormat = 'mp4';
+                    startBatchVideoGeneration();
+                }
+            }
+            
+            // Start batch GIF generation with G key
+            if (event.key.toLowerCase() === 'g') {
+                event.preventDefault();
+                if (!batchGeneration.running) {
+                    recordingFormat = 'gif';
+                    startBatchVideoGeneration();
+                }
+            }
+            
+            // Start batch video+GIF generation with M key (both)
+            if (event.key.toLowerCase() === 'm') {
+                event.preventDefault();
+                if (!batchGeneration.running) {
+                    recordingFormat = 'both';
+                    startBatchVideoGeneration();
+                }
+            }
+            
+            // Stop batch generation with Escape
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                if (batchGeneration.running) {
+                    stopBatchGeneration();
+                }
+            }
         });
+        
+        // Start automated batch generation
+        async function startBatchGeneration(count = 100) {
+            if (batchGeneration.running) return;
+            
+            console.log(`🚀 Starting batch generation: ${count} artworks`);
+            console.log('Press ESC to stop batch generation');
+            
+            batchGeneration.running = true;
+            batchGeneration.count = 0;
+            batchGeneration.total = count;
+            
+            // Update page title to show progress
+            const originalTitle = document.title;
+            
+            for (let i = 1; i <= count && batchGeneration.running; i++) {
+                try {
+                    // Update progress
+                    batchGeneration.count = i;
+                    document.title = `[${i}/${count}] Generating Onchain Summer Vibes`;
+                    console.log(`📸 Generating artwork ${i}/${count}`);
+                    
+                    // Generate new artwork
+                    await initializeArtwork();
+                    
+                    // Wait for artwork to fully render
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    
+                    // Save the artwork
+                    if (app && batchGeneration.running) {
+                        // Add batch number to filename
+                        const originalSave = app.saveAsPNG;
+                        app.saveAsPNG = function() {
+                            if (!this.canvas) return;
+                            
+                            try {
+                                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                                const patternName = this.tokenTraits?.Pattern || 'Unknown';
+                                const themeName = this.tokenTraits?.Theme || 'Unknown';
+                                const batchNum = String(i).padStart(3, '0');
+                                const filename = `OnchainSummerVibes_${batchNum}_${patternName}_${themeName}_${timestamp}.png`;
+                                
+                                const link = document.createElement('a');
+                                link.download = filename;
+                                link.href = this.canvas.toDataURL('image/png', 1.0);
+                                
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                
+                                console.log(`✅ Saved: ${filename}`);
+                                
+                            } catch (error) {
+                                console.error('Failed to save PNG:', error);
+                            }
+                        };
+                        
+                        app.saveAsPNG();
+                        app.saveAsPNG = originalSave; // Restore original method
+                    }
+                    
+                    // Small delay before next iteration
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error(`Error generating artwork ${i}:`, error);
+                }
+            }
+            
+            // Restore original title
+            document.title = originalTitle;
+            
+            if (batchGeneration.running) {
+                console.log(`🎉 Batch generation complete! Generated ${batchGeneration.count} artworks`);
+            } else {
+                console.log(`⏹️ Batch generation stopped at ${batchGeneration.count}/${batchGeneration.total}`);
+            }
+            
+            batchGeneration.running = false;
+            batchGeneration.count = 0;
+            batchGeneration.total = 0;
+        }
+        
+        // Start automated batch video generation
+        async function startBatchVideoGeneration(count = 20) {
+            if (batchGeneration.running) return;
+            
+            const formatText = recordingFormat === 'both' ? 'MP4s & GIFs' : 
+                              recordingFormat === 'gif' ? 'GIFs' : 'MP4s';
+            
+            console.log(`🎬 Starting batch ${formatText} generation: ${count} 5-second clips at 60 FPS`);
+            console.log('Press ESC to stop video generation');
+            
+            batchGeneration.running = true;
+            batchGeneration.recordingVideo = true;
+            batchGeneration.count = 0;
+            batchGeneration.total = count;
+            
+            // Update page title to show progress
+            const originalTitle = document.title;
+            
+            for (let i = 1; i <= count && batchGeneration.running; i++) {
+                try {
+                    // Update progress
+                    batchGeneration.count = i;
+                    document.title = `[${i}/${count}] Recording ${formatText}`;
+                    console.log(`🎥 Recording ${formatText.toLowerCase()} ${i}/${count}`);
+                    
+                    // Generate new artwork
+                    await initializeArtwork();
+                    
+                    // Wait for artwork to fully load
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Start recording based on format
+                    if (app && app.canvas && batchGeneration.running) {
+                        if (recordingFormat === 'both') {
+                            await recordCanvasVideo(i); // MP4 first
+                            await recordCanvasGIF(i);   // Then GIF
+                        } else if (recordingFormat === 'gif') {
+                            await recordCanvasGIF(i);
+                        } else {
+                            await recordCanvasVideo(i);
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error(`Error recording ${formatText.toLowerCase()} ${i}:`, error);
+                }
+            }
+            
+            // Restore original title
+            document.title = originalTitle;
+            
+            if (batchGeneration.running) {
+                console.log(`🎬 Batch ${formatText.toLowerCase()} generation complete! Generated ${batchGeneration.count} files`);
+            } else {
+                console.log(`⏹️ Batch generation stopped at ${batchGeneration.count}/${batchGeneration.total}`);
+            }
+            
+            batchGeneration.running = false;
+            batchGeneration.recordingVideo = false;
+            batchGeneration.count = 0;
+            batchGeneration.total = 0;
+        }
+        
+        // Record 5-second 60 FPS MP4 video of canvas
+        async function recordCanvasVideo(batchNumber) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const stream = app.canvas.captureStream(60); // 60 FPS high quality
+                    recordedChunks = [];
+                    
+                    // Try MP4 format first, fallback to WebM
+                    let mimeType = 'video/mp4';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = 'video/webm;codecs=vp9';
+                    }
+                    
+                    mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: mimeType,
+                        videoBitsPerSecond: 5000000 // 5 Mbps for high quality
+                    });
+                    
+                    mediaRecorder.ondataavailable = function(event) {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.onstop = function() {
+                        const blob = new Blob(recordedChunks, {
+                            type: mimeType
+                        });
+                        
+                        // Generate filename
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                        const patternName = app.tokenTraits?.Pattern || 'Unknown';
+                        const themeName = app.tokenTraits?.Theme || 'Unknown';
+                        const batchNum = String(batchNumber).padStart(3, '0');
+                        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        const filename = `OnchainSummerVibes_Video_${batchNum}_${patternName}_${themeName}_${timestamp}.${extension}`;
+                        
+                        // Download video
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        console.log(`🎬 Saved 60 FPS video: ${filename}`);
+                        resolve();
+                    };
+                    
+                    mediaRecorder.onerror = function(event) {
+                        console.error('MediaRecorder error:', event);
+                        reject(event);
+                    };
+                    
+                    // Start recording
+                    mediaRecorder.start();
+                    console.log('🔴 Recording 60 FPS video...');
+                    
+                    // Stop after 5 seconds
+                    setTimeout(() => {
+                        if (mediaRecorder && mediaRecorder.state === 'recording') {
+                            mediaRecorder.stop();
+                            console.log('⏹️ Recording stopped');
+                        }
+                    }, 5000);
+                    
+                } catch (error) {
+                    console.error('Error starting video recording:', error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // Record 5-second high-quality GIF of canvas
+        async function recordCanvasGIF(batchNumber) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    console.log('🎨 Starting GIF capture...');
+                    
+                    // Import GIF.js library dynamically
+                    if (typeof GIF === 'undefined') {
+                        await loadGIFJS();
+                    }
+                    
+                    const gif = new GIF({
+                        workers: 2,
+                        quality: 1, // Best quality (1-30, lower is better)
+                        width: app.canvas.width,
+                        height: app.canvas.height,
+                        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+                    });
+                    
+                    const totalFrames = 300; // 5 seconds * 60 FPS
+                    const frameInterval = 1000 / 60; // 60 FPS
+                    let frameCount = 0;
+                    
+                    const captureFrame = () => {
+                        if (frameCount >= totalFrames || !batchGeneration.running) {
+                            gif.render();
+                            return;
+                        }
+                        
+                        // Add current canvas frame to GIF
+                        gif.addFrame(app.canvas, {
+                            delay: frameInterval,
+                            copy: true
+                        });
+                        
+                        frameCount++;
+                        
+                        // Continue capturing next frame
+                        setTimeout(captureFrame, frameInterval);
+                    };
+                    
+                    gif.on('finished', function(blob) {
+                        // Generate filename
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                        const patternName = app.tokenTraits?.Pattern || 'Unknown';
+                        const themeName = app.tokenTraits?.Theme || 'Unknown';
+                        const batchNum = String(batchNumber).padStart(3, '0');
+                        const filename = `OnchainSummerVibes_GIF_${batchNum}_${patternName}_${themeName}_${timestamp}.gif`;
+                        
+                        // Download GIF
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        console.log(`🎨 Saved 60 FPS GIF: ${filename}`);
+                        resolve();
+                    });
+                    
+                    gif.on('progress', function(p) {
+                        console.log(`🎨 GIF progress: ${Math.round(p * 100)}%`);
+                    });
+                    
+                    // Start capturing frames
+                    captureFrame();
+                    
+                } catch (error) {
+                    console.error('Error creating GIF:', error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // Load GIF.js library dynamically
+        async function loadGIFJS() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Stop batch generation
+        function stopBatchGeneration() {
+            if (batchGeneration.running) {
+                console.log('⏹️ Stopping batch generation...');
+                batchGeneration.running = false;
+                
+                // Stop video recording if active
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }
+        }
         
     
         // Initialize when page loads
@@ -161,6 +539,16 @@
         console.log('🎨 Onchain Summer Vibes - Generative Art Collection');
         console.log('🌈 Each refresh generates a unique artwork with randomized patterns, themes, and parameters');
         console.log('⭐ Built for Highlight.xyz NFT minting');
+        console.log('');
+        console.log('🎮 Controls:');
+        console.log('  Spacebar - Generate new artwork');
+        console.log('  S - Save current artwork as PNG');
+        console.log('  B - Batch generate 100 PNGs');
+        console.log('  V - Batch generate 20 MP4s (60 FPS, 5 seconds each)');
+        console.log('  G - Batch generate 20 GIFs (60 FPS, 5 seconds each)');
+        console.log('  M - Batch generate both MP4s & GIFs');
+        console.log('  Escape - Stop any batch operation');
+        console.log('🚀 Ready to create!');
     </script>
 </body>
 </html>
