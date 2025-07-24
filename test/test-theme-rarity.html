@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Rarity Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-results { margin: 20px 0; }
+        .theme-count { display: flex; justify-content: space-between; margin: 5px 0; }
+        .rarity-common { color: #4CAF50; }
+        .rarity-uncommon { color: #FF9800; }
+        .rarity-rare { color: #9C27B0; }
+        .rarity-epic { color: #F44336; }
+    </style>
+</head>
+<body>
+    <h1>Theme Rarity Distribution Test</h1>
+    <button onclick="runTest()">Test Theme Selection (1000 iterations)</button>
+    <div id="results" class="test-results"></div>
+    
+    <script type="module">
+        import { THEME_PRESETS, THEME_RARITY } from './src/constants/patternConfig.js';
+        
+        window.THEME_PRESETS = THEME_PRESETS;
+        window.THEME_RARITY = THEME_RARITY;
+        
+        window.selectThemeByRarity = function() {
+            const random = Math.random() * 100;
+            let cumulative = 0;
+            
+            for (const [rarity, config] of Object.entries(THEME_RARITY)) {
+                cumulative += config.weight;
+                if (random <= cumulative) {
+                    const themes = config.themes;
+                    return themes[Math.floor(Math.random() * themes.length)];
+                }
+            }
+            return 'dawn'; // fallback
+        };
+        
+        window.runTest = function() {
+            const iterations = 1000;
+            const results = {};
+            const rarityResults = {};
+            
+            // Initialize counters
+            Object.keys(THEME_PRESETS).forEach(theme => {
+                results[theme] = 0;
+            });
+            
+            Object.keys(THEME_RARITY).forEach(rarity => {
+                rarityResults[rarity] = 0;
+            });
+            
+            // Run test
+            for (let i = 0; i < iterations; i++) {
+                const selectedTheme = selectThemeByRarity();
+                results[selectedTheme]++;
+                
+                // Find rarity of selected theme
+                for (const [rarity, config] of Object.entries(THEME_RARITY)) {
+                    if (config.themes.includes(selectedTheme)) {
+                        rarityResults[rarity]++;
+                        break;
+                    }
+                }
+            }
+            
+            // Display results
+            let html = '<h3>Theme Distribution Results (1000 iterations)</h3>';
+            html += '<div><strong>Individual Themes:</strong></div>';
+            
+            Object.entries(results).forEach(([theme, count]) => {
+                const percentage = (count / iterations * 100).toFixed(1);
+                const themeData = THEME_PRESETS[theme];
+                const rarityClass = `rarity-${themeData.rarity}`;
+                html += `<div class="theme-count ${rarityClass}">
+                    <span>${theme} (${themeData.rarity})</span>
+                    <span>${count} times (${percentage}%)</span>
+                </div>`;
+            });
+            
+            html += '<div style="margin-top: 20px;"><strong>Rarity Distribution:</strong></div>';
+            Object.entries(rarityResults).forEach(([rarity, count]) => {
+                const percentage = (count / iterations * 100).toFixed(1);
+                const expectedPercentage = THEME_RARITY[rarity].weight;
+                const rarityClass = `rarity-${rarity}`;
+                html += `<div class="theme-count ${rarityClass}">
+                    <span>${rarity} (expected ${expectedPercentage}%)</span>
+                    <span>${count} times (${percentage}%)</span>
+                </div>`;
+            });
+            
+            document.getElementById('results').innerHTML = html;
+        };
+    </script>
+</body>
+</html>

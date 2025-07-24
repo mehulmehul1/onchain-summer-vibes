@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme UI Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .theme-test { margin: 20px 0; }
+        .theme-preview { 
+            width: 100px; 
+            height: 60px; 
+            border: 2px solid #ccc; 
+            border-radius: 8px; 
+            margin: 10px; 
+            display: inline-block;
+            position: relative;
+        }
+        .theme-label {
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .rarity-common { border-color: #4CAF50; }
+        .rarity-uncommon { border-color: #FF9800; }
+        .rarity-rare { border-color: #9C27B0; }
+        .rarity-epic { border-color: #F44336; }
+    </style>
+</head>
+<body>
+    <h1>Theme System UI Test</h1>
+    <div id="themes" class="theme-test"></div>
+    
+    <script type="module">
+        import { THEME_PRESETS } from './src/constants/patternConfig.js';
+        
+        const container = document.getElementById('themes');
+        
+        Object.entries(THEME_PRESETS).forEach(([key, theme]) => {
+            const preview = document.createElement('div');
+            preview.className = `theme-preview rarity-${theme.rarity}`;
+            preview.style.background = `linear-gradient(45deg, ${theme.color1}, ${theme.color2}, ${theme.color3}, ${theme.color4})`;
+            
+            const label = document.createElement('div');
+            label.className = 'theme-label';
+            label.textContent = `${key} (${theme.rarity})`;
+            
+            preview.appendChild(label);
+            container.appendChild(preview);
+        });
+    </script>
+</body>
+</html>
